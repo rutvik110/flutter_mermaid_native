@@ -22,7 +22,7 @@ class FlutterMermaidHelper {
   ///   runApp(MyApp());
   /// }
   /// ```
-  static Future<void> initMermaid() async {
+  static Future<void> initialize() async {
     if (_mermaidInitialized) return;
     await RustLib.init();
     _mermaidInitialized = true;

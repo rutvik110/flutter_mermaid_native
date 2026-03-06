@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mermaid/flutter_mermaid.dart';
 
 Future<void> main() async {
-  await RustLib.init();
+  await FlutterMermaidHelper.initialize();
   runApp(const MyApp());
 }
 
