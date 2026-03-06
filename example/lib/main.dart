@@ -1,8 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_mermaid/src/rust/api/simple.dart';
-import 'package:flutter_mermaid/src/rust/frb_generated.dart';
+import 'package:flutter_mermaid/flutter_mermaid.dart';
 
 Future<void> main() async {
   await RustLib.init();
@@ -32,40 +29,6 @@ class DiagramViewer extends StatefulWidget {
 
 class _DiagramViewerState extends State<DiagramViewer> {
   int _selectedIndex = 0;
-  Uint8List? _currentImage;
-  bool _isLoading = false;
-  String? _error;
-  Duration? _renderTime;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadDiagram();
-  }
-
-  Future<void> _loadDiagram() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      final stopwatch = Stopwatch()..start();
-      final pixels = await renderMermaidToPng(diagram: diagramExamples[_selectedIndex].code);
-      stopwatch.stop();
-
-      setState(() {
-        _currentImage = pixels;
-        _renderTime = stopwatch.elapsed;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,64 +53,14 @@ class _DiagramViewerState extends State<DiagramViewer> {
               onChanged: (value) {
                 if (value != null) {
                   setState(() => _selectedIndex = value);
-                  _loadDiagram();
                 }
               },
             ),
           ),
         ),
       ),
-      body: Column(
-        children: [
-          if (_renderTime != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Render time: ${_renderTime!.inMilliseconds}ms',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
-          Expanded(child: _buildContent()),
-        ],
-      ),
+      body: MermaidDiagram(diagram: diagramExamples[_selectedIndex].code),
     );
-  }
-
-  Widget _buildContent() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error, color: Colors.red, size: 48),
-              const SizedBox(height: 16),
-              Text('Error: $_error', textAlign: TextAlign.center),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (_currentImage != null) {
-      return InteractiveViewer(
-        minScale: 0.5,
-        maxScale: 4.0,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Image.memory(_currentImage!, fit: BoxFit.contain),
-          ),
-        ),
-      );
-    }
-
-    return const Center(child: Text('No diagram loaded'));
   }
 }
 
