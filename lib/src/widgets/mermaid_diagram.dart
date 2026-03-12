@@ -88,18 +88,33 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     }
 
     if (_error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
             children: [
-              Icon(Icons.error, color: Theme.of(context).colorScheme.error, size: 48),
-              const SizedBox(height: 16),
-              Text('Error: $_error', textAlign: TextAlign.center),
+              Icon(Icons.error_outline, size: 16, color: Theme.of(context).colorScheme.onErrorContainer),
+              const SizedBox(width: 8),
+              Text(
+                'Failed to render diagram',
+                style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer, fontSize: 13),
+              ),
             ],
           ),
-        ),
+          SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12.0),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: SelectableText(
+              widget.diagram.trim(),
+              style: TextStyle(fontFamily: 'monospace', fontSize: 13, color: Theme.of(context).colorScheme.onSurface),
+            ),
+          ),
+        ],
       );
     }
 
