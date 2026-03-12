@@ -21,12 +21,6 @@ class MermaidDiagram extends StatefulWidget {
   /// The Mermaid diagram source code.
   final String diagram;
 
-  /// Minimum scale for pinch-to-zoom. Defaults to 0.5.
-  final double minScale;
-
-  /// Maximum scale for pinch-to-zoom. Defaults to 4.0.
-  final double maxScale;
-
   /// How the image should be inscribed into the available space.
   final BoxFit fit;
 
@@ -36,8 +30,6 @@ class MermaidDiagram extends StatefulWidget {
   const MermaidDiagram({
     super.key,
     required this.diagram,
-    this.minScale = 0.5,
-    this.maxScale = 4.0,
     this.fit = BoxFit.contain,
     this.padding = const EdgeInsets.all(16.0),
   });
@@ -112,14 +104,10 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     }
 
     if (_image != null) {
-      return InteractiveViewer(
-        minScale: widget.minScale,
-        maxScale: widget.maxScale,
-        child: Center(
-          child: Padding(
-            padding: widget.padding,
-            child: Image.memory(_image!, fit: widget.fit),
-          ),
+      return Center(
+        child: Padding(
+          padding: widget.padding,
+          child: Image.memory(_image!, fit: widget.fit),
         ),
       );
     }

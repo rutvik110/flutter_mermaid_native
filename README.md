@@ -1,92 +1,315 @@
 # flutter_mermaid
 
-A new Flutter FFI plugin project.
+A Flutter plugin for rendering [Mermaid](https://mermaid.js.org/) diagrams natively using Rust.
+
+This package uses [flutter_rust_bridge](https://cjycode.com/flutter_rust_bridge/) to bridge Rust code that renders Mermaid diagrams to SVG/PNG, providing fast and efficient diagram rendering across all platforms.
+
+## Supported Diagram Types
+
+- Flowcharts
+- Sequence Diagrams
+- Class Diagrams
+- State Diagrams
+- Entity Relationship Diagrams
+- Pie Charts
+- Gantt Charts
+- Mindmaps
+- Git Graphs
+- Timelines
+- User Journey Diagrams
+
+Not supported yet or lacks 100% coverage through the rust layer:
+
+- ZenUML (Rust layer fails to parse this type) 
 
 ## Getting Started
 
-This project is a starting point for a Flutter
-[FFI plugin](https://flutter.dev/to/ffi-package),
-a specialized package that includes native code directly invoked with Dart FFI.
+### Prerequisites
 
-## Project structure
+- Flutter SDK ^3.3.0
+- Rust toolchain (for building the native library)
 
-This template uses the following structure:
+### Installation
 
-* `src`: Contains the native source code, and a CmakeFile.txt file for building
-  that source code into a dynamic library.
-
-* `lib`: Contains the Dart code that defines the API of the plugin, and which
-  calls into the native code using `dart:ffi`.
-
-* platform folders (`android`, `ios`, `windows`, etc.): Contains the build files
-  for building and bundling the native code library with the platform application.
-
-## Building and bundling native code
-
-The `pubspec.yaml` specifies FFI plugins as follows:
+Add `flutter_mermaid` to your `pubspec.yaml`:
 
 ```yaml
-  plugin:
-    platforms:
-      some_platform:
-        ffiPlugin: true
+dependencies:
+  flutter_mermaid:
+    git:
+      url: https://github.com/your-username/flutter_mermaid.git
 ```
 
-This configuration invokes the native build for the various target platforms
-and bundles the binaries in Flutter applications using these FFI plugins.
+### Initialize the Library
 
-This can be combined with dartPluginClass, such as when FFI is used for the
-implementation of one platform in a federated plugin:
+Before using any Mermaid widgets, initialize the library in your `main()` function:
 
-```yaml
-  plugin:
-    implements: some_other_plugin
-    platforms:
-      some_platform:
-        dartPluginClass: SomeClass
-        ffiPlugin: true
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_mermaid/flutter_mermaid.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FlutterMermaidHelper.initialize();
+  runApp(MyApp());
+}
 ```
 
-A plugin can have both FFI and method channels:
+## Usage
 
-```yaml
-  plugin:
-    platforms:
-      some_platform:
-        pluginClass: SomeName
-        ffiPlugin: true
+### Using the MermaidDiagram Widget
+
+The simplest way to render a Mermaid diagram:
+
+```dart
+import 'package:flutter_mermaid/flutter_mermaid.dart';
+
+MermaidDiagram(
+  diagram: '''
+flowchart TD
+    A[Start] --> B{Is it working?}
+    B -->|Yes| C[Great!]
+    B -->|No| D[Debug]
+    D --> B
+    C --> E[End]
+''',
+)
 ```
 
-The native build systems that are invoked by FFI (and method channel) plugins are:
+### Widget Properties
 
-* For Android: Gradle, which invokes the Android NDK for native builds.
-  * See the documentation in android/build.gradle.
-* For iOS and MacOS: Xcode, via CocoaPods.
-  * See the documentation in ios/flutter_mermaid.podspec.
-  * See the documentation in macos/flutter_mermaid.podspec.
-* For Linux and Windows: CMake.
-  * See the documentation in linux/CMakeLists.txt.
-  * See the documentation in windows/CMakeLists.txt.
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `diagram` | `String` | required | The Mermaid diagram source code |
+| `fit` | `BoxFit` | `BoxFit.contain` | How the image should fit in the available space |
+| `padding` | `EdgeInsets` | `EdgeInsets.all(16.0)` | Padding around the diagram |
 
-## Binding to native code
+## Examples
 
-To use the native code, bindings in Dart are needed.
-To avoid writing these by hand, they are generated from the header file
-(`src/flutter_mermaid.h`) by `package:ffigen`.
-Regenerate the bindings by running `dart run ffigen --config ffigen.yaml`.
+### Flowchart
 
-## Invoking native code
+```dart
+MermaidDiagram(
+  diagram: '''
+flowchart TB
+    subgraph Frontend
+        A[React App] --> B[Redux Store]
+        B --> C[Components]
+    end
+    subgraph Backend
+        D[API Gateway] --> E[Auth Service]
+        D --> F[User Service]
+    end
+    C --> D
+''',
+)
+```
 
-Very short-running native functions can be directly invoked from any isolate.
-For example, see `sum` in `lib/flutter_mermaid.dart`.
+### Sequence Diagram
 
-Longer-running functions should be invoked on a helper isolate to avoid
-dropping frames in Flutter applications.
-For example, see `sumAsync` in `lib/flutter_mermaid.dart`.
+```dart
+MermaidDiagram(
+  diagram: '''
+sequenceDiagram
+    participant U as User
+    participant C as Client
+    participant S as Server
+    
+    U->>C: Click Login
+    C->>S: POST /auth/login
+    S-->>C: JWT Token
+    C-->>U: Welcome!
+''',
+)
+```
 
-## Flutter help
+### Class Diagram
 
-For help getting started with Flutter, view our
-[online documentation](https://docs.flutter.dev), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```dart
+MermaidDiagram(
+  diagram: '''
+classDiagram
+    Animal <|-- Duck
+    Animal <|-- Fish
+    Animal : +int age
+    Animal: +isMammal()
+    class Duck{
+        +String beakColor
+        +swim()
+    }
+''',
+)
+```
 
+## Development
+
+### Project Structure
+
+```
+flutter_mermaid/
+├── lib/
+│   ├── flutter_mermaid.dart      # Main library exports
+│   └── src/
+│       ├── core/                  # Core utilities
+│       ├── rust/                  # Generated Rust bridge code
+│       └── widgets/               # Flutter widgets
+├── rust/
+│   ├── Cargo.toml                 # Rust dependencies
+│   └── src/
+│       ├── api/
+│       │   └── simple.rs          # Rust API implementation
+│       ├── frb_generated.rs       # Generated bridge code
+│       └── lib.rs                 # Rust library entry
+├── example/                       # Example Flutter app
+└── cargokit/                      # Build tooling for Rust
+```
+
+### Updating Rust Code
+
+When you modify the Rust code in `rust/src/`, you need to regenerate the Dart bindings using `flutter_rust_bridge`.
+
+#### 1. Install flutter_rust_bridge_codegen
+
+```bash
+cargo install flutter_rust_bridge_codegen
+```
+
+#### 2. Make Your Changes
+
+Edit the Rust code in `rust/src/api/simple.rs`:
+
+```rust
+// rust/src/api/simple.rs
+use merman::render::HeadlessRenderer;
+
+pub fn render_mermaid_to_svg(diagram: String) -> String {
+    let renderer = HeadlessRenderer::new();
+    renderer
+        .render_svg_readable_sync(&diagram)
+        .expect("Failed to render diagram")
+        .expect("No SVG output")
+}
+
+pub fn render_mermaid_to_png(diagram: String) -> Vec<u8> {
+    let svg = render_mermaid_to_svg(diagram);
+    svg_to_png(&svg)
+}
+
+// Add your new functions here...
+```
+
+#### 3. Regenerate Dart Bindings
+
+Run the code generator from the project root:
+
+```bash
+flutter_rust_bridge_codegen generate
+```
+
+This will update the following files:
+- `lib/src/rust/api/simple.dart`
+- `lib/src/rust/frb_generated.dart`
+- `lib/src/rust/frb_generated.io.dart`
+- `lib/src/rust/frb_generated.web.dart`
+- `rust/src/frb_generated.rs`
+
+#### 4. Update Rust Dependencies
+
+To add or update Rust dependencies, edit `rust/Cargo.toml`:
+
+```toml
+[dependencies]
+flutter_rust_bridge = "=2.11.1"
+merman = { version = "0.3", features = ["raster"] }
+merman-core = "0.3"
+resvg = "0.46"
+usvg = "0.46"
+# Add new dependencies here
+```
+
+Then run:
+
+```bash
+cd rust
+cargo update
+```
+
+#### 5. Build and Test
+
+```bash
+# Run the example app
+cd example
+flutter run
+```
+
+### Adding New API Functions
+
+1. Add your function to `rust/src/api/simple.rs`:
+
+```rust
+pub fn my_new_function(input: String) -> String {
+    // Your implementation
+    format!("Result: {}", input)
+}
+```
+
+2. Regenerate bindings:
+
+```bash
+flutter_rust_bridge_codegen generate
+```
+
+3. Use in Dart:
+
+```dart
+import 'package:flutter_mermaid/flutter_mermaid.dart';
+
+final result = await myNewFunction(input: "test");
+```
+
+### Troubleshooting
+
+#### Build Errors
+
+If you encounter build errors related to Rust:
+
+1. Ensure Rust is installed: `rustup --version`
+2. Update Rust: `rustup update`
+3. Clean and rebuild:
+
+```bash
+cd rust
+cargo clean
+cd ../example
+flutter clean
+flutter pub get
+flutter run
+```
+
+#### Code Generation Issues
+
+If `flutter_rust_bridge_codegen generate` fails:
+
+1. Ensure the codegen version matches the dependency:
+
+```bash
+cargo install flutter_rust_bridge_codegen --version 2.11.1
+```
+
+2. Check for syntax errors in your Rust code:
+
+```bash
+cd rust
+cargo check
+```
+
+## Platform Support
+
+| Platform | Supported |
+|----------|-----------|
+| Android  | ✅        |
+| iOS      | ✅        |
+| macOS    | ✅        |
+| Windows  | ✅        |
+| Linux    | ✅        |
+| Web      | ⚠️ (requires wasm build) |
