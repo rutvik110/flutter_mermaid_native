@@ -107,7 +107,10 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
       return Center(
         child: Padding(
           padding: widget.padding,
-          child: Image.memory(_image!, fit: widget.fit),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: 400),
+            child: Image.memory(_image!, fit: widget.fit),
+          ),
         ),
       );
     }
