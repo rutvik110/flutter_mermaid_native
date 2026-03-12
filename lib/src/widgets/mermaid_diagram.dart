@@ -106,12 +106,12 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
             width: double.infinity,
             padding: const EdgeInsets.all(12.0),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
             ),
             child: SelectableText(
               widget.diagram.trim(),
-              style: TextStyle(fontFamily: 'monospace', fontSize: 13, color: Theme.of(context).colorScheme.onSurface),
+              style: TextStyle(fontFamily: 'JetBrainsMono', fontWeight: FontWeight.w300, height: 1.6),
             ),
           ),
         ],
