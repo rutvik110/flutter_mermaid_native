@@ -54,9 +54,7 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
 
     final cached = getDiagramFromCache();
 
-    if (cached != null) {
-      return;
-    } else {
+    if (cached == null) {
       _render();
     }
   }
@@ -66,9 +64,7 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.diagram != widget.diagram) {
       final cached = getDiagramFromCache();
-      if (cached != null) {
-        return;
-      } else {
+      if (cached == null) {
         _render();
       }
     }
@@ -81,7 +77,10 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
       _image = cached;
       _isLoading = false;
       _error = null;
+
+      return _image;
     }
+
     return null;
   }
 
