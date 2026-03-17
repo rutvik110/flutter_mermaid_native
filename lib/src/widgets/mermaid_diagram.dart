@@ -2,11 +2,16 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../core/mermaid_cache.dart';
 import '../rust/api/simple.dart';
 
 /// A widget that renders Mermaid diagram code as a PNG image.
 ///
 /// Call [RustLib.init] in your app's main before using this widget.
+///
+/// This widget automatically caches rendered diagrams using [MermaidCache],
+/// so diagrams are only rendered once and subsequent displays load instantly
+/// from cache without animation.
 ///
 /// Example:
 /// ```dart
@@ -41,31 +46,59 @@ class MermaidDiagram extends StatefulWidget {
 class _MermaidDiagramState extends State<MermaidDiagram> {
   Uint8List? _image;
   bool _isLoading = true;
+  bool _loadedFromCache = false;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _render();
+
+    final cached = getDiagramFromCache();
+
+    if (cached != null) {
+      return;
+    } else {
+      _render();
+    }
   }
 
   @override
   void didUpdateWidget(MermaidDiagram oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.diagram != widget.diagram) {
-      _render();
+      final cached = getDiagramFromCache();
+      if (cached != null) {
+        return;
+      } else {
+        _render();
+      }
     }
+  }
+
+  Uint8List? getDiagramFromCache() {
+    final cache = MermaidCache.instance;
+    final cached = cache.get(widget.diagram);
+    if (cached != null) {
+      _image = cached;
+      _isLoading = false;
+      _loadedFromCache = true;
+      _error = null;
+    }
+    return null;
   }
 
   Future<void> _render() async {
     setState(() {
       _isLoading = true;
+      _loadedFromCache = false;
       _error = null;
     });
 
     try {
       final pixels = await renderMermaidToPng(diagram: widget.diagram);
       if (mounted) {
+        // Store in cache
+        MermaidCache.instance.put(widget.diagram, pixels);
         setState(() {
           _image = pixels;
           _isLoading = false;
@@ -119,19 +152,22 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     }
 
     if (_image != null) {
-      return AnimatedSize(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        child: Center(
-          child: Padding(
-            padding: widget.padding,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: 400),
-              child: Image.memory(_image!, fit: widget.fit),
-            ),
+      final imageWidget = Center(
+        child: Padding(
+          padding: widget.padding,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: 400),
+            child: Image.memory(_image!, fit: widget.fit),
           ),
         ),
       );
+
+      // Skip animation if loaded from cache for instant display
+      if (_loadedFromCache) {
+        return imageWidget;
+      }
+
+      return AnimatedSize(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut, child: imageWidget);
     }
 
     return const Center(child: Text('No diagram loaded'));

@@ -1,3 +1,5 @@
+import 'package:flutter_mermaid/flutter_mermaid.dart';
+import 'package:flutter_mermaid/src/core/mermaid_cache.dart';
 import 'package:flutter_mermaid/src/rust/frb_generated.dart';
 
 class FlutterMermaidHelper {
@@ -26,5 +28,9 @@ class FlutterMermaidHelper {
     if (_mermaidInitialized) return;
     await RustLib.init();
     _mermaidInitialized = true;
+  }
+
+  static void clearMermaidCache() {
+    MermaidCache.instance.clear();
   }
 }
