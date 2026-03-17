@@ -117,7 +117,7 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_error != null && _image != null) {
+    if (_error != null || _image == null) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
