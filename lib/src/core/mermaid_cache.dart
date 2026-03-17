@@ -41,14 +41,6 @@ final class MermaidCache {
     }
   }
 
-  /// Removes a specific diagram from the cache.
-  void remove(String diagram) {
-    final key = _normalizeKey(diagram);
-    if (_cache.containsKey(key)) {
-      _cache.remove(key);
-    }
-  }
-
   /// Clears all cached diagrams.
   ///
   /// Call this when switching conversations or when you want to free memory.
