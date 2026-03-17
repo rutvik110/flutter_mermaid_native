@@ -46,7 +46,6 @@ class MermaidDiagram extends StatefulWidget {
 class _MermaidDiagramState extends State<MermaidDiagram> {
   Uint8List? _image;
   bool _isLoading = true;
-  bool _loadedFromCache = false;
   String? _error;
 
   @override
@@ -81,7 +80,6 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     if (cached != null) {
       _image = cached;
       _isLoading = false;
-      _loadedFromCache = true;
       _error = null;
     }
     return null;
@@ -90,7 +88,6 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
   Future<void> _render() async {
     setState(() {
       _isLoading = true;
-      _loadedFromCache = false;
       _error = null;
     });
 
@@ -120,7 +117,7 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_error != null) {
+    if (_error != null && _image != null) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -151,8 +148,10 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
       );
     }
 
-    if (_image != null) {
-      final imageWidget = Center(
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      child: Center(
         child: Padding(
           padding: widget.padding,
           child: ConstrainedBox(
@@ -160,16 +159,7 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
             child: Image.memory(_image!, fit: widget.fit),
           ),
         ),
-      );
-
-      // Skip animation if loaded from cache for instant display
-      if (_loadedFromCache) {
-        return imageWidget;
-      }
-
-      return AnimatedSize(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut, child: imageWidget);
-    }
-
-    return const Center(child: Text('No diagram loaded'));
+      ),
+    );
   }
 }
