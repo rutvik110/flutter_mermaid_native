@@ -147,17 +147,12 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
         ],
       );
     } else {
-      child = Center(
-        child: Padding(
-          padding: widget.padding,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: 400),
-            child: Image.memory(_image!, fit: widget.fit),
-          ),
-        ),
+      child = Padding(
+        padding: widget.padding,
+        child: Image.memory(_image!, fit: widget.fit),
       );
     }
 
-    return AnimatedSize(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut, child: child);
+    return AnimatedSize(duration: kThemeAnimationDuration, curve: Curves.easeInOut, child: child);
   }
 }
