@@ -119,7 +119,7 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     final Widget child;
 
     if (_isLoading) {
-      child = widget.loadingBuilder?.call(context) ?? const SizedBox.shrink();
+      child = widget.loadingBuilder?.call(context) ?? const Center(child: CircularProgressIndicator());
     } else if (_error != null || _image == null) {
       child = Stack(
         children: [
