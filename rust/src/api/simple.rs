@@ -1,10 +1,11 @@
 use merman::render::HeadlessRenderer;
 
 pub fn render_mermaid_to_svg(diagram: String) -> String {
+    let processed = preprocess_diagram(&diagram);
     let renderer = HeadlessRenderer::new();
 
     renderer
-        .render_svg_readable_sync(&diagram)
+        .render_svg_readable_sync(&processed)
         .expect("Failed to render diagram")
         .expect("No SVG output")
 }
@@ -12,6 +13,33 @@ pub fn render_mermaid_to_svg(diagram: String) -> String {
 pub fn render_mermaid_to_png(diagram: String) -> Vec<u8> {
     let svg = render_mermaid_to_svg(diagram);
     svg_to_png(&svg)
+}
+
+/// Sanitizes diagram source to work around known merman parser limitations.
+///
+/// merman's `lex_descr` stops at `:` characters, so a label like
+/// `Streaming (isLastNode: true)` gets split into two Descr tokens.
+/// This replaces secondary colons within transition labels with ` -`.
+fn preprocess_diagram(diagram: &str) -> String {
+    let trimmed = diagram.trim_start();
+    if !trimmed.starts_with("stateDiagram") {
+        return diagram.to_string();
+    }
+
+    diagram
+        .lines()
+        .map(|line| {
+            if let Some(colon_pos) = line.find(':') {
+                let (before, label_with_colon) = line.split_at(colon_pos);
+                let label = &label_with_colon[1..]; // skip the first ':'
+                let sanitized_label = label.replace(':', " -");
+                format!("{}:{}", before, sanitized_label)
+            } else {
+                line.to_string()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 fn svg_to_png(svg: &str) -> Vec<u8> {
