@@ -32,11 +32,15 @@ class MermaidDiagram extends StatefulWidget {
   /// Padding around the diagram.
   final EdgeInsets padding;
 
+  /// Optional builder for the loading state. When null, shows nothing while rendering.
+  final WidgetBuilder? loadingBuilder;
+
   const MermaidDiagram({
     super.key,
     required this.diagram,
     this.fit = BoxFit.contain,
     this.padding = const EdgeInsets.all(16.0),
+    this.loadingBuilder,
   });
 
   @override
@@ -112,25 +116,13 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    final Widget child;
 
-    if (_error != null || _image == null) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
+    if (_isLoading) {
+      child = widget.loadingBuilder?.call(context) ?? const SizedBox.shrink();
+    } else if (_error != null || _image == null) {
+      child = Stack(
         children: [
-          Row(
-            children: [
-              Icon(Icons.error_outline, size: 16, color: Theme.of(context).colorScheme.onErrorContainer),
-              const SizedBox(width: 8),
-              Text(
-                'Failed to render diagram',
-                style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer, fontSize: 13),
-              ),
-            ],
-          ),
-          SizedBox(height: 8),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12.0),
@@ -143,14 +135,19 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
               style: TextStyle(fontFamily: 'JetBrainsMono', fontWeight: FontWeight.w300, height: 1.6),
             ),
           ),
+          if (_error != null)
+            Positioned(
+              right: 8,
+              bottom: 8,
+              child: Tooltip(
+                message: _error!,
+                child: Icon(Icons.error_outline, size: 16, color: Theme.of(context).colorScheme.error),
+              ),
+            ),
         ],
       );
-    }
-
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      child: Center(
+    } else {
+      child = Center(
         child: Padding(
           padding: widget.padding,
           child: ConstrainedBox(
@@ -158,7 +155,9 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
             child: Image.memory(_image!, fit: widget.fit),
           ),
         ),
-      ),
-    );
+      );
+    }
+
+    return AnimatedSize(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut, child: child);
   }
 }
