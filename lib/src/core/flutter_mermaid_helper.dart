@@ -35,10 +35,16 @@ class FlutterMermaidHelper {
     MermaidCache.instance.clear();
   }
 
+  /// Generates and returns a SVG string from a Mermaid diagram code.
+  ///
+  /// [initialize] must be called somewhere in your app before calling this method.
   static Future<String> renderMermaidToSvg({required String diagram}) =>
       // ignore: invalid_use_of_internal_member
       RustLib.instance.api.crateApiSimpleRenderMermaidToSvg(diagram: diagram);
 
+  /// Generates and returns an image bytes from a Mermaid diagram code.
+  ///
+  /// [initialize] must be called somewhere in your app before calling this method.
   static Future<Uint8List> renderMermaidToPng({required String diagram}) =>
       // ignore: invalid_use_of_internal_member
       RustLib.instance.api.crateApiSimpleRenderMermaidToPng(diagram: diagram);
