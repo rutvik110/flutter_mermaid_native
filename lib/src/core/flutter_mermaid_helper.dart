@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_mermaid/flutter_mermaid.dart';
 import 'package:flutter_mermaid/src/core/mermaid_cache.dart';
 import 'package:flutter_mermaid/src/rust/frb_generated.dart';
@@ -33,4 +35,12 @@ class FlutterMermaidHelper {
   static void clearMermaidCache() {
     MermaidCache.instance.clear();
   }
+
+  static Future<String> renderMermaidToSvg({required String diagram}) =>
+      // ignore: invalid_use_of_internal_member
+      RustLib.instance.api.crateApiSimpleRenderMermaidToSvg(diagram: diagram);
+
+  static Future<Uint8List> renderMermaidToPng({required String diagram}) =>
+      // ignore: invalid_use_of_internal_member
+      RustLib.instance.api.crateApiSimpleRenderMermaidToPng(diagram: diagram);
 }
