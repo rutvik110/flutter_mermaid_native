@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:flutter_mermaid/flutter_mermaid.dart';
-import 'package:flutter_mermaid/src/core/mermaid_cache.dart';
 import 'package:flutter_mermaid/src/rust/frb_generated.dart';
 
 class FlutterMermaidHelper {
