@@ -5,6 +5,16 @@ Render [Mermaid](https://mermaid.js.org/) diagrams in Flutter using a native [Ru
 Mermaid diagrams PNG/SVG are created using the native rust layer based on the provided diagram source and the output is then rendered on the flutter side.
 
 > **Note on generated SVG rendering with flutter_svg:** `flutter_mermaid_native` uses `flutter_svg` to render generated diagram SVG. But as of right now, `flutter_svg` does not support every SVG tag that the Rust layer emits to properly render mermaid diagrams. For example, the Entity relationship diagram triggers a `RangeError` inside `flutter_svg`'s `SvgParser`. Diagrams rendered with `format: MermaidRenderFormat.svg` may therefore look inaccurate or fail to render. Use `MermaidRenderFormat.png` for those diagrams, or pass `svgDiagramBuilder` to draw the SVG with another library.
+>
+> There is no single `flutter_svg` issue tracking this mermaid/`RangeError` gap. Incomplete SVG support is treated as known, with separate issues for individual missing features:
+>
+> - [SVG filter spec not supported](https://github.com/flutter/flutter/issues/158811)
+> - [Filter / blur effects unimplemented](https://github.com/flutter/flutter/issues/158592)
+> - [Nested `<svg>` elements not supported](https://github.com/flutter/flutter/issues/158603)
+> - [Does not support fallback `font-family` lists](https://github.com/flutter/flutter/issues/187087)
+> - [No proper message when an SVG is unsupported](https://github.com/flutter/flutter/issues/179240)
+> - [SVG is not rendered without any errors](https://github.com/flutter/flutter/issues/165879)
+> - [Parse exception](https://github.com/dnfield/flutter_svg/issues/1112) (original `dnfield/flutter_svg` repo)
 
 ## Supported diagram types
 
