@@ -119,8 +119,6 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
         oldWidget.format != widget.format) {
       if (!_applyCache()) {
         _render();
-      } else {
-        setState(() {});
       }
     }
   }
