@@ -3,6 +3,6 @@ enum MermaidRenderFormat {
   /// Native PNG raster.
   png,
 
-  /// Native SVG string, drawn with `flutter_svg`. Default for [MermaidDiagram].
+  /// Native SVG string, drawn with `flutter_svg`.
   svg,
 }

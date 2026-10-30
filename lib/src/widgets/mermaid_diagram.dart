@@ -10,7 +10,16 @@ import '../enums/mermaid_render_format.dart';
 export '../enums/mermaid_render_format.dart';
 
 /// Builds an error widget when diagram rendering fails.
-typedef MermaidErrorWidgetBuilder = Widget Function(BuildContext context, Object error, StackTrace? stackTrace);
+typedef MermaidErrorWidgetBuilder =
+    Widget Function(BuildContext context, Object error, StackTrace? stackTrace);
+
+/// Builds a widget from native PNG bytes produced by the Mermaid renderer.
+typedef MermaidImageDiagramBuilder =
+    Widget Function(BuildContext context, Uint8List png, BoxFit fit);
+
+/// Builds a widget from native SVG markup produced by the Mermaid renderer.
+typedef MermaidSvgDiagramBuilder =
+    Widget Function(BuildContext context, String svg, BoxFit fit);
 
 /// A widget that renders Mermaid diagram code as PNG or SVG.
 ///
@@ -55,10 +64,10 @@ class MermaidDiagram extends StatefulWidget {
   final MermaidErrorWidgetBuilder? diagramWidgetRenderingErrorBuilder;
 
   /// Custom image diagram widget. Used to render the generated diagram image bytes.
-  final Widget Function(BuildContext context, Uint8List png, BoxFit fit)? imageDiagramBuilder;
+  final MermaidImageDiagramBuilder? imageDiagramBuilder;
 
   /// Custom SVG diagram widget. Used to render the generated diagram SVG string.
-  final Widget Function(BuildContext context, String svg, BoxFit fit)? svgDiagramBuilder;
+  final MermaidSvgDiagramBuilder? svgDiagramBuilder;
 
   const MermaidDiagram({
     super.key,
@@ -106,7 +115,8 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
   @override
   void didUpdateWidget(MermaidDiagram oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.diagram != widget.diagram || oldWidget.format != widget.format) {
+    if (oldWidget.diagram != widget.diagram ||
+        oldWidget.format != widget.format) {
       if (!_applyCache()) {
         _render();
       } else {
@@ -147,7 +157,9 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     try {
       switch (widget.format) {
         case MermaidRenderFormat.png:
-          final pixels = await FlutterMermaidHelper.renderMermaidToPng(diagram: widget.diagram);
+          final pixels = await FlutterMermaidHelper.renderMermaidToPng(
+            diagram: widget.diagram,
+          );
           if (!mounted) return;
           MermaidCache.instance.putPng(widget.diagram, pixels);
           setState(() {
@@ -155,7 +167,9 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
             _isLoading = false;
           });
         case MermaidRenderFormat.svg:
-          final svg = await FlutterMermaidHelper.renderMermaidToSvg(diagram: widget.diagram);
+          final svg = await FlutterMermaidHelper.renderMermaidToSvg(
+            diagram: widget.diagram,
+          );
           if (!mounted) return;
           MermaidCache.instance.putSvg(widget.diagram, svg);
           setState(() {
@@ -184,7 +198,11 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
           ),
           child: SelectableText(
             widget.diagram.trim(),
-            style: TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w300, height: 1.6),
+            style: TextStyle(
+              fontFamily: 'monospace',
+              fontWeight: FontWeight.w300,
+              height: 1.6,
+            ),
           ),
         ),
         if (_error != null)
@@ -193,15 +211,27 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
             bottom: 8,
             child: Tooltip(
               message: _error.toString(),
-              child: Icon(Icons.error_outline, size: 16, color: Theme.of(context).colorScheme.error),
+              child: Icon(
+                Icons.error_outline,
+                size: 16,
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
           ),
       ],
     );
   }
 
-  Widget _widgetRenderingError(BuildContext context, Object error, StackTrace? stackTrace) {
-    return widget.diagramWidgetRenderingErrorBuilder?.call(context, error, stackTrace) ??
+  Widget _widgetRenderingError(
+    BuildContext context,
+    Object error,
+    StackTrace? stackTrace,
+  ) {
+    return widget.diagramWidgetRenderingErrorBuilder?.call(
+          context,
+          error,
+          stackTrace,
+        ) ??
         Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error);
   }
 
@@ -210,7 +240,9 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     final Widget child;
 
     if (_isLoading) {
-      child = widget.loadingBuilder?.call(context) ?? const Center(child: CircularProgressIndicator());
+      child =
+          widget.loadingBuilder?.call(context) ??
+          const Center(child: CircularProgressIndicator());
     } else if (_error != null || !_hasProcessedDiagram) {
       child =
           widget.diagramSourceProcessingErrorBuilder?.call(
@@ -225,14 +257,26 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
         child: switch (widget.format) {
           MermaidRenderFormat.png =>
             widget.imageDiagramBuilder?.call(context, _png!, widget.fit) ??
-                Image.memory(_png!, fit: widget.fit, errorBuilder: _widgetRenderingError),
+                Image.memory(
+                  _png!,
+                  fit: widget.fit,
+                  errorBuilder: _widgetRenderingError,
+                ),
           MermaidRenderFormat.svg =>
             widget.svgDiagramBuilder?.call(context, _svg!, widget.fit) ??
-                SvgPicture.string(_svg!, fit: widget.fit, errorBuilder: _widgetRenderingError),
+                SvgPicture.string(
+                  _svg!,
+                  fit: widget.fit,
+                  errorBuilder: _widgetRenderingError,
+                ),
         },
       );
     }
 
-    return AnimatedSize(duration: kThemeAnimationDuration, curve: Curves.easeInOut, child: child);
+    return AnimatedSize(
+      duration: kThemeAnimationDuration,
+      curve: Curves.easeInOut,
+      child: child,
+    );
   }
 }

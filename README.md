@@ -90,8 +90,8 @@ flowchart TD
 | `loadingBuilder` | `WidgetBuilder?` | progress indicator | Shown while rendering |
 | `diagramSourceProcessingErrorBuilder` | `MermaidErrorWidgetBuilder?` | Package error widget | Native SVG/PNG generation error |
 | `diagramWidgetRenderingErrorBuilder` | `MermaidErrorWidgetBuilder?` | Package error widget | `Image` / `SvgPicture` widget load error |
-| `imageDiagramBuilder` | `Function?` | `Image.memory` | Used to render generated diagram image bytes |
-| `svgDiagramBuilder` | `Function?` | `SvgPicture.string` | Used to render generated diagram svg string |
+| `imageDiagramBuilder` | `MermaidImageDiagramBuilder?` | `Image.memory` | Used to render generated diagram image bytes |
+| `svgDiagramBuilder` | `MermaidSvgDiagramBuilder?` | `SvgPicture.string` | Used to render generated diagram svg string |
 
 PNG and SVG are cached separately by diagram source. Call `FlutterMermaidHelper.clearMermaidCache()` when you want to free that memory.
 
