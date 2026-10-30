@@ -34,8 +34,6 @@ dependencies:
 
 ## Usage
 
-Initialize once, then use the widget:
-
 ```dart
 import 'package:flutter/material.dart';
 import 'package:flutter_mermaid_native/flutter_mermaid_native.dart';
@@ -53,7 +51,7 @@ class MyApp extends StatelessWidget {
     return const MaterialApp(
       home: Scaffold(
         body: MermaidDiagram(
-          // format: MermaidRenderFormat.png, // optional; default is SVG
+          // format(optional): MermaidRenderFormat.png, // default format is SVG.
           diagram: '''
 flowchart TD
     A[Start] --> B{Is it working?}
@@ -74,8 +72,8 @@ flowchart TD
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `diagram` | `String` | required | Mermaid source |
-| `format` | `MermaidRenderFormat` | `svg` | Independent render path: SVG **or** PNG, not both |
-| `fit` | `BoxFit` | `BoxFit.contain` | How the picture fits its parent |
+| `format` | `MermaidRenderFormat` | `svg` | Rendering format: SVG **or** PNG|
+| `fit` | `BoxFit` | `BoxFit.contain` | How the rendered diagram fits its parent |
 | `padding` | `EdgeInsets` | `EdgeInsets.all(16)` | Padding around the picture |
 | `loadingBuilder` | `WidgetBuilder?` | progress indicator | Shown while rendering |
 
