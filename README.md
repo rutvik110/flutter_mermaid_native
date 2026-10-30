@@ -22,51 +22,51 @@ PNG samples from the example gallery, rendered by the native engine.
 
 ### Flowchart
 
-<img src="doc/diagrams/flowchart.png" alt="Flowchart" width="280" />
+<img src="doc/diagrams/flowchart.png" alt="Flowchart" width="168" />
 
 ### Flowchart with subgraphs
 
-<img src="doc/diagrams/flowchart_with_subgraphs.png" alt="Flowchart with subgraphs" width="420" />
+<img src="doc/diagrams/flowchart_with_subgraphs.png" alt="Flowchart with subgraphs" width="252" />
 
 ### Sequence
 
-<img src="doc/diagrams/sequence.png" alt="Sequence diagram" width="560" />
+<img src="doc/diagrams/sequence.png" alt="Sequence diagram" width="336" />
 
 ### Class
 
-<img src="doc/diagrams/class.png" alt="Class diagram" width="360" />
+<img src="doc/diagrams/class.png" alt="Class diagram" width="216" />
 
 ### State
 
-<img src="doc/diagrams/state.png" alt="State diagram" width="280" />
+<img src="doc/diagrams/state.png" alt="State diagram" width="168" />
 
 ### Entity relationship
 
-<img src="doc/diagrams/entity_relationship.png" alt="Entity relationship diagram" width="240" />
+<img src="doc/diagrams/entity_relationship.png" alt="Entity relationship diagram" width="144" />
 
 ### Pie chart
 
-<img src="doc/diagrams/pie_chart.png" alt="Pie chart" width="400" />
+<img src="doc/diagrams/pie_chart.png" alt="Pie chart" width="240" />
 
 ### Gantt
 
-<img src="doc/diagrams/gantt.png" alt="Gantt chart" width="720" />
+<img src="doc/diagrams/gantt.png" alt="Gantt chart" width="432" />
 
 ### Mindmap
 
-<img src="doc/diagrams/mindmap.png" alt="Mindmap" width="480" />
+<img src="doc/diagrams/mindmap.png" alt="Mindmap" width="288" />
 
 ### Git graph
 
-<img src="doc/diagrams/git_graph.png" alt="Git graph" width="360" />
+<img src="doc/diagrams/git_graph.png" alt="Git graph" width="216" />
 
 ### Timeline
 
-<img src="doc/diagrams/timeline.png" alt="Timeline" width="720" />
+<img src="doc/diagrams/timeline.png" alt="Timeline" width="432" />
 
 ### User journey
 
-<img src="doc/diagrams/user_journey.png" alt="User journey" width="720" />
+<img src="doc/diagrams/user_journey.png" alt="User journey" width="432" />
 
 ZenUML is not fully supported by the current Rust parser.
 
