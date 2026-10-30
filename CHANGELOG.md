@@ -7,6 +7,7 @@
 * Example gallery samples live in `example/lib/mermaid_diagram_examples.dart`.
 * `MermaidDiagram.format` selects an independent PNG or SVG render path (default PNG).
 * `MermaidDiagram` accepts optional `imageDiagramBuilder` and `svgDiagramBuilder` callbacks to replace `Image.memory` / `SvgPicture.string`.
+* PNG text is drawn with Helvetica (Apple) or Roboto (Android), not Mermaid's Trebuchet/Arial stack.
 
 ## 0.0.2
 

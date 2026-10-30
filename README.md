@@ -36,6 +36,7 @@ ZenUML is not fully supported by the current Rust parser.
 
 - Flutter 3.38 or newer (Dart 3.10+).
 - A [Rust toolchain](https://rustup.rs/) on machines that **build** the app (the crate is compiled by [Cargokit](https://github.com/irondash/cargokit) during `flutter build` / `flutter run`).
+- PNG labels are drawn with Helvetica (iOS/macOS) or Roboto (Android).
 
 ## Installation
 

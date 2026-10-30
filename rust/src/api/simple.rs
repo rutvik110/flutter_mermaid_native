@@ -1,4 +1,7 @@
+use std::sync::{Arc, OnceLock};
+
 use merman::render::HeadlessRenderer;
+use resvg::usvg::fontdb;
 
 pub fn render_mermaid_to_svg(diagram: String) -> String {
     let processed = preprocess_diagram(&diagram);
@@ -42,12 +45,52 @@ fn preprocess_diagram(diagram: &str) -> String {
         .join("\n")
 }
 
+/// PNG text always uses this family. Helvetica on Apple, Roboto on Android.
+#[cfg(any(target_os = "ios", target_os = "macos"))]
+const DIAGRAM_SANS: &str = "Helvetica";
+#[cfg(target_os = "android")]
+const DIAGRAM_SANS: &str = "Roboto";
+#[cfg(not(any(target_os = "ios", target_os = "macos", target_os = "android")))]
+const DIAGRAM_SANS: &str = "Arial";
+
+/// `load_system_fonts` covers macOS/Windows/Linux. iOS and Android need their
+/// font dirs loaded so Helvetica / Roboto are in the database.
+fn load_platform_fonts(db: &mut fontdb::Database) {
+    db.load_system_fonts();
+
+    #[cfg(target_os = "ios")]
+    {
+        db.load_fonts_dir("/System/Library/Fonts");
+        db.load_fonts_dir("/System/Library/Fonts/Core");
+    }
+
+    #[cfg(target_os = "android")]
+    {
+        db.load_fonts_dir("/system/fonts");
+    }
+
+    db.set_sans_serif_family(DIAGRAM_SANS);
+}
+
+fn shared_font_setup() -> Arc<fontdb::Database> {
+    static FONTS: OnceLock<Arc<fontdb::Database>> = OnceLock::new();
+    FONTS
+        .get_or_init(|| {
+            let mut db = fontdb::Database::new();
+            load_platform_fonts(&mut db);
+            Arc::new(db)
+        })
+        .clone()
+}
+
 fn svg_to_png(svg: &str) -> Vec<u8> {
     use resvg::tiny_skia::{Pixmap, Transform};
     use resvg::usvg::{Options, Tree};
 
     let mut opt = Options::default();
-    opt.fontdb_mut().load_system_fonts();
+    opt.fontdb = shared_font_setup();
+    opt.font_family = DIAGRAM_SANS.to_string();
+    opt.style_sheet = Some(format!("* {{ font-family: {DIAGRAM_SANS}; }}"));
 
     let tree = Tree::from_str(svg, &opt).expect("Failed to parse SVG");
     let size = tree.size().to_int_size();
