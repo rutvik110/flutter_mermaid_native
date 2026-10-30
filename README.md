@@ -56,6 +56,7 @@ class MyApp extends StatelessWidget {
     return const MaterialApp(
       home: Scaffold(
         body: MermaidDiagram(
+          // format: MermaidRenderFormat.png, // optional; default is SVG
           diagram: '''
 flowchart TD
     A[Start] --> B{Is it working?}
@@ -76,11 +77,12 @@ flowchart TD
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `diagram` | `String` | required | Mermaid source |
-| `fit` | `BoxFit` | `BoxFit.contain` | How the PNG fits its parent |
-| `padding` | `EdgeInsets` | `EdgeInsets.all(16)` | Padding around the image |
+| `format` | `MermaidRenderFormat` | `svg` | Independent render path: SVG **or** PNG, not both |
+| `fit` | `BoxFit` | `BoxFit.contain` | How the picture fits its parent |
+| `padding` | `EdgeInsets` | `EdgeInsets.all(16)` | Padding around the picture |
 | `loadingBuilder` | `WidgetBuilder?` | progress indicator | Shown while rendering |
 
-Rendered PNGs are cached in memory by diagram source. Call `FlutterMermaidHelper.clearMermaidCache()` when you want to free that memory.
+PNG and SVG are cached separately by diagram source. Call `FlutterMermaidHelper.clearMermaidCache()` when you want to free that memory.
 
 ### Headless rendering
 
@@ -98,68 +100,92 @@ flutter run -d macos
 
 ## Rendering performance
 
-Headless SVG/PNG times for the example gallery, plus widget first paint (`MermaidDiagram` until a PNG `Image` appears, cache cleared between diagrams).
+Different mermaid rendering methods benchmarks.
 
-**Tested on**
+| Benchmark | What it measures |
+|---|---|
+| SVG | Headless `renderMermaidToSvg` only |
+| PNG | Headless `renderMermaidToPng` only |
+| Widget PNG path | One isolated `MermaidDiagram(format: png)` until `Image.memory` is in the tree (first and second paint) |
+
+**Testing Environment**
 
 | | |
 |---|---|
 | Machine | Apple M4 Pro, 24 GB RAM, arm64 |
 | OS | macOS 26.4.1 (25E253) |
 | Flutter | 3.47.8 stable (Dart 3.13.7) |
-| Build | debug, `flutter test integration_test/render_benchmark_test.dart -d macos` |
-| Method | 1 warmup + 5 timed runs per diagram/format; PNG is rasterized at 2x |
+| Build Mode | Profile (AOT), `flutter drive --profile -d macos --driver=test_driver/integration_test.dart --target=integration_test/render_benchmark_test.dart` |
 
-SVG layout is typically **1–9 ms**. PNG rasterization is **150–728 ms** and dominates widget first paint (median **249 ms**). Timeline, user journey, and Gantt are the slowest PNGs.
+SVG and PNG times are the **average** of 5 timed runs after 1 warmup, one diagram at a time. Widget PNG **first paint** is a cold mount of **that diagram only** (empty cache, empty tree beforehand). **Second paint** remounts the same single diagram with cache already filled.
+
+Benchmarks captured in Flutter Profile mode.
 
 ### SVG
 
-| Diagram | Median | p95 | Mean | Bytes |
-|---|---:|---:|---:|---:|
-| Flowchart | 3.0 ms | 4.7 ms | 3.3 ms | 14,937 |
-| Flowchart with subgraphs | 7.0 ms | 7.3 ms | 7.1 ms | 23,615 |
-| Sequence | 1.9 ms | 2.0 ms | 1.9 ms | 23,091 |
-| Class | 4.3 ms | 4.6 ms | 4.4 ms | 21,714 |
-| State | 8.8 ms | 9.3 ms | 8.9 ms | 172,466 |
-| Entity relationship | 7.3 ms | 7.7 ms | 7.3 ms | 35,898 |
-| Pie chart | 1.0 ms | 1.2 ms | 1.1 ms | 4,248 |
-| Gantt | 1.6 ms | 1.6 ms | 1.6 ms | 9,507 |
-| Mindmap | 5.1 ms | 5.5 ms | 5.1 ms | 40,804 |
-| Git graph | 1.5 ms | 2.0 ms | 1.6 ms | 5,391 |
-| Timeline | 2.0 ms | 2.6 ms | 2.1 ms | 19,939 |
-| User journey | 1.6 ms | 1.6 ms | 1.6 ms | 20,841 |
+Headless `FlutterMermaidHelper.renderMermaidToSvg`. Typical average **0.2–1.1 ms**.
 
-### PNG (2x)
+| Diagram | Average | Bytes |
+|---|---:|---:|
+| Flowchart | 0.5 ms | 14,937 |
+| Flowchart with subgraphs | 1.0 ms | 23,615 |
+| Sequence | 0.2 ms | 23,091 |
+| Class | 0.8 ms | 21,714 |
+| State | 1.1 ms | 172,371 |
+| Entity relationship | 1.1 ms | 35,898 |
+| Pie chart | 0.2 ms | 4,248 |
+| Gantt | 0.3 ms | 9,507 |
+| Mindmap | 0.7 ms | 40,804 |
+| Git graph | 0.3 ms | 5,391 |
+| Timeline | 0.3 ms | 19,939 |
+| User journey | 0.2 ms | 20,841 |
 
-| Diagram | Median | p95 | Mean | Bytes |
-|---|---:|---:|---:|---:|
-| Flowchart | 157 ms | 162 ms | 158 ms | 81,783 |
-| Flowchart with subgraphs | 305 ms | 316 ms | 308 ms | 219,769 |
-| Sequence | 239 ms | 251 ms | 241 ms | 158,081 |
-| Class | 210 ms | 273 ms | 222 ms | 160,516 |
-| State | 171 ms | 173 ms | 171 ms | 97,458 |
-| Entity relationship | 212 ms | 223 ms | 213 ms | 174,040 |
-| Pie chart | 369 ms | 380 ms | 369 ms | 185,520 |
-| Gantt | 467 ms | 473 ms | 468 ms | 151,603 |
-| Mindmap | 230 ms | 245 ms | 233 ms | 118,184 |
-| Git graph | 150 ms | 152 ms | 149 ms | 52,395 |
-| Timeline | 728 ms | 739 ms | 728 ms | 246,967 |
-| User journey | 562 ms | 578 ms | 567 ms | 334,978 |
+### PNG
 
-### Widget first paint
+Headless `FlutterMermaidHelper.renderMermaidToPng` at 2x. This path does **not** call the SVG helper above; it is a separate API. Typical average **19–40 ms**. Slowest in this set: timeline, user journey, Gantt.
 
-| | Min | Median | p95 | Max |
-|---|---:|---:|---:|---:|
-| Gallery (12 diagrams) | 145 ms | 249 ms | 573 ms | 748 ms |
+| Diagram | Average | Bytes |
+|---|---:|---:|
+| Flowchart | 22 ms | 81,783 |
+| Flowchart with subgraphs | 27 ms | 219,769 |
+| Sequence | 26 ms | 158,081 |
+| Class | 25 ms | 160,516 |
+| State | 23 ms | 97,456 |
+| Entity relationship | 25 ms | 174,040 |
+| Pie chart | 28 ms | 185,520 |
+| Gantt | 30 ms | 151,603 |
+| Mindmap | 23 ms | 118,184 |
+| Git graph | 19 ms | 52,395 |
+| Timeline | 40 ms | 246,967 |
+| User journey | 33 ms | 334,978 |
+
+### Widget PNG path (independent)
+
+Each row mounts **one** `MermaidDiagram(format: MermaidRenderFormat.png)` and waits until `Image.memory` is in the tree.**First paint** is a cold mount (empty cache, native PNG encode). **Second paint** remounts that same diagram with cache already filled.
+
+| Diagram | First paint | Second paint |
+|---|---:|---:|
+| Flowchart | 25 ms | <1 ms |
+| Flowchart with subgraphs | 50 ms | <1 ms |
+| Sequence | 45 ms | <1 ms |
+| Class | 35 ms | <1 ms |
+| State | 35 ms | <1 ms |
+| Entity relationship | 50 ms | <1 ms |
+| Pie chart | 50 ms | <1 ms |
+| Gantt | 50 ms | <1 ms |
+| Mindmap | 45 ms | <1 ms |
+| Git graph | 25 ms | <1 ms |
+| Timeline | 55 ms | <1 ms |
+| User journey | 50 ms | <1 ms |
 
 Re-run:
 
 ```bash
 cd example
-flutter test integration_test/render_benchmark_test.dart -d macos
+flutter drive --no-start-paused --profile -d macos \
+  --driver=test_driver/integration_test.dart \
+  --target=integration_test/render_benchmark_test.dart
 ```
-
-These are debug-host numbers, not release-device numbers.
 
 ## Development
 

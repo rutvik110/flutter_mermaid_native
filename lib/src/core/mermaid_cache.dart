@@ -1,20 +1,15 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_mermaid_native/src/enums/mermaid_render_format.dart';
 
-/// A cache layer for rendered Mermaid diagrams.
+/// In-memory cache for rendered Mermaid output.
 ///
-/// This singleton caches PNG image data keyed by the diagram source string,
-/// avoiding redundant re-rendering when widgets are rebuilt (e.g., in
-/// virtualized lists).
+/// PNG bytes and SVG strings are stored separately so the same diagram can be
+/// cached in both formats without colliding.
 ///
 /// Example:
 /// ```dart
-/// // Clear cache on conversation switch
 /// MermaidCache.instance.clear();
-///
-/// // Remove a specific diagram from cache
 /// MermaidCache.instance.remove(diagramSource);
-///
-/// // Check cache statistics
 /// print('Cached diagrams: ${MermaidCache.instance.size}');
 /// ```
 final class MermaidCache {
@@ -25,37 +20,58 @@ final class MermaidCache {
   /// The singleton instance of [MermaidCache].
   static MermaidCache get instance => _instance;
 
-  final Map<String, Uint8List> _cache = {};
+  final Map<String, Uint8List> _png = {};
+  final Map<String, String> _svg = {};
 
-  /// Returns true if the diagram is cached.
-  bool contains(String diagram) => _cache.containsKey(_normalizeKey(diagram));
-
-  /// Gets the cached image data for a diagram, or null if not cached.
-  Uint8List? get(String diagram) => _cache[_normalizeKey(diagram)];
-
-  /// Stores the rendered image data for a diagram.
-  void put(String diagram, Uint8List imageData) {
+  /// Returns true if PNG (default) or the given [format] is cached.
+  bool contains(String diagram, {MermaidRenderFormat format = MermaidRenderFormat.png}) {
     final key = _normalizeKey(diagram);
-    if (!_cache.containsKey(key)) {
-      _cache[key] = imageData;
+    return switch (format) {
+      MermaidRenderFormat.png => _png.containsKey(key),
+      MermaidRenderFormat.svg => _svg.containsKey(key),
+    };
+  }
+
+  /// Cached PNG bytes, or null.
+  Uint8List? getPng(String diagram) => _png[_normalizeKey(diagram)];
+
+  /// Cached SVG string, or null.
+  String? getSvg(String diagram) => _svg[_normalizeKey(diagram)];
+
+  /// Stores PNG bytes. Does not overwrite an existing PNG entry.
+  void putPng(String diagram, Uint8List imageData) {
+    final key = _normalizeKey(diagram);
+    if (!_png.containsKey(key)) {
+      _png[key] = imageData;
     }
   }
 
-  /// Number of diagrams currently stored in the cache.
-  int get size => _cache.length;
-
-  /// Removes a single diagram from the cache.
-  void remove(String diagram) {
-    _cache.remove(_normalizeKey(diagram));
+  /// Stores an SVG document. Does not overwrite an existing SVG entry.
+  void putSvg(String diagram, String svg) {
+    final key = _normalizeKey(diagram);
+    if (!_svg.containsKey(key)) {
+      _svg[key] = svg;
+    }
   }
 
-  /// Clears all cached diagrams.
-  ///
-  /// Call this when switching conversations or when you want to free memory.
+  /// Number of cached PNG and SVG entries combined.
+  int get size => _png.length + _svg.length;
+
+  /// Removes PNG (default) or the given [format] for one diagram.
+  void remove(String diagram, {MermaidRenderFormat format = MermaidRenderFormat.png}) {
+    final key = _normalizeKey(diagram);
+    switch (format) {
+      case MermaidRenderFormat.png:
+        _png.remove(key);
+      case MermaidRenderFormat.svg:
+        _svg.remove(key);
+    }
+  }
+
+  /// Clears PNG and SVG caches.
   void clear() {
-    if (_cache.isNotEmpty) {
-      _cache.clear();
-    }
+    _png.clear();
+    _svg.clear();
   }
 
   String _normalizeKey(String diagram) => diagram.trim();

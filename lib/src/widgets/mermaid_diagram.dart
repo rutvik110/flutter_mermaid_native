@@ -1,17 +1,20 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../core/flutter_mermaid_helper.dart';
 import '../core/mermaid_cache.dart';
+import '../enums/mermaid_render_format.dart';
 
-/// A widget that renders Mermaid diagram code as a PNG image.
+export '../enums/mermaid_render_format.dart';
+
+/// A widget that renders Mermaid diagram code as PNG or SVG.
 ///
 /// Call [FlutterMermaidHelper.initialize] before using this widget.
 ///
-/// This widget automatically caches rendered diagrams using [MermaidCache],
-/// so diagrams are only rendered once and subsequent displays load instantly
-/// from cache without animation.
+/// [format] chooses a **single** render path. It does not run PNG and SVG as
+/// one pipeline. Default is [MermaidRenderFormat.svg].
 ///
 /// Example:
 /// ```dart
@@ -26,7 +29,10 @@ class MermaidDiagram extends StatefulWidget {
   /// The Mermaid diagram source code.
   final String diagram;
 
-  /// How the image should be inscribed into the available space.
+  /// Native method used to produce the picture. Independent of the other format.
+  final MermaidRenderFormat format;
+
+  /// How the picture should be inscribed into the available space.
   final BoxFit fit;
 
   /// Padding around the diagram.
@@ -38,6 +44,7 @@ class MermaidDiagram extends StatefulWidget {
   const MermaidDiagram({
     super.key,
     required this.diagram,
+    this.format = MermaidRenderFormat.svg,
     this.fit = BoxFit.contain,
     this.padding = const EdgeInsets.all(16.0),
     this.loadingBuilder,
@@ -48,17 +55,15 @@ class MermaidDiagram extends StatefulWidget {
 }
 
 class _MermaidDiagramState extends State<MermaidDiagram> {
-  Uint8List? _image;
+  Uint8List? _png;
+  String? _svg;
   bool _isLoading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-
-    final cached = getDiagramFromCache();
-
-    if (cached == null) {
+    if (!_applyCache()) {
       _render();
     }
   }
@@ -66,9 +71,8 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
   @override
   void didUpdateWidget(MermaidDiagram oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.diagram != widget.diagram) {
-      final cached = getDiagramFromCache();
-      if (cached == null) {
+    if (oldWidget.diagram != widget.diagram || oldWidget.format != widget.format) {
+      if (!_applyCache()) {
         _render();
       } else {
         setState(() {});
@@ -76,35 +80,51 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     }
   }
 
-  Uint8List? getDiagramFromCache() {
+  bool _applyCache() {
     final cache = MermaidCache.instance;
-    final cached = cache.get(widget.diagram);
-    if (cached != null) {
-      _image = cached;
-      _isLoading = false;
-      _error = null;
-
-      return _image;
+    switch (widget.format) {
+      case MermaidRenderFormat.png:
+        final cached = cache.getPng(widget.diagram);
+        if (cached == null) return false;
+        _png = cached;
+        _svg = null;
+      case MermaidRenderFormat.svg:
+        final cached = cache.getSvg(widget.diagram);
+        if (cached == null) return false;
+        _svg = cached;
+        _png = null;
     }
-
-    return null;
+    _isLoading = false;
+    _error = null;
+    return true;
   }
 
   Future<void> _render() async {
     setState(() {
       _isLoading = true;
       _error = null;
+      _png = null;
+      _svg = null;
     });
 
     try {
-      final pixels = await FlutterMermaidHelper.renderMermaidToPng(diagram: widget.diagram);
-      if (mounted) {
-        // Store in cache
-        MermaidCache.instance.put(widget.diagram, pixels);
-        setState(() {
-          _image = pixels;
-          _isLoading = false;
-        });
+      switch (widget.format) {
+        case MermaidRenderFormat.png:
+          final pixels = await FlutterMermaidHelper.renderMermaidToPng(diagram: widget.diagram);
+          if (!mounted) return;
+          MermaidCache.instance.putPng(widget.diagram, pixels);
+          setState(() {
+            _png = pixels;
+            _isLoading = false;
+          });
+        case MermaidRenderFormat.svg:
+          final svg = await FlutterMermaidHelper.renderMermaidToSvg(diagram: widget.diagram);
+          if (!mounted) return;
+          MermaidCache.instance.putSvg(widget.diagram, svg);
+          setState(() {
+            _svg = svg;
+            _isLoading = false;
+          });
       }
     } catch (e) {
       if (mounted) {
@@ -116,13 +136,18 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     }
   }
 
+  bool get _hasPicture => switch (widget.format) {
+        MermaidRenderFormat.png => _png != null,
+        MermaidRenderFormat.svg => _svg != null,
+      };
+
   @override
   Widget build(BuildContext context) {
     final Widget child;
 
     if (_isLoading) {
       child = widget.loadingBuilder?.call(context) ?? const Center(child: CircularProgressIndicator());
-    } else if (_error != null || _image == null) {
+    } else if (_error != null || !_hasPicture) {
       child = Stack(
         children: [
           Container(
@@ -155,7 +180,10 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     } else {
       child = Padding(
         padding: widget.padding,
-        child: Image.memory(_image!, fit: widget.fit),
+        child: switch (widget.format) {
+          MermaidRenderFormat.png => Image.memory(_png!, fit: widget.fit),
+          MermaidRenderFormat.svg => SvgPicture.string(_svg!, fit: widget.fit),
+        },
       );
     }
 

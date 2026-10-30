@@ -5,6 +5,7 @@
 * Adds Android and iOS FFI plugin scaffolding so mobile apps can build the Rust crate.
 * Documents installation from pub.dev, supported diagram types, and platform requirements.
 * Example gallery samples live in `example/lib/mermaid_diagram_examples.dart`.
+* `MermaidDiagram.format` selects an independent PNG or SVG render path (default SVG).
 
 # 0.0.2
 

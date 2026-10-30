@@ -11,9 +11,11 @@ The gallery covers flowcharts, sequence, class, state, ER, pie, Gantt, mindmap, 
 
 `FlutterMermaidHelper.initialize()` must run before `runApp`.
 
-Rendering benchmarks (SVG, PNG, and widget first paint):
+Rendering benchmarks (profile / AOT; macOS integration tests cannot use `--release`):
 
 ```bash
 cd example
-flutter test integration_test/render_benchmark_test.dart -d macos
+flutter drive --no-start-paused --profile -d macos \
+  --driver=test_driver/integration_test.dart \
+  --target=integration_test/render_benchmark_test.dart
 ```

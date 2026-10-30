@@ -24,6 +24,7 @@ dependencies:
     sdk: flutter
   # Must match the flutter_rust_bridge_codegen version that generated lib/src/rust.
   flutter_rust_bridge: 2.11.1
+  flutter_svg: ^2.2.0
 
 dev_dependencies:
   flutter_test:
