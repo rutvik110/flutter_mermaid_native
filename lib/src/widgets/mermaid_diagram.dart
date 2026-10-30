@@ -13,8 +13,7 @@ export '../enums/mermaid_render_format.dart';
 ///
 /// Call [FlutterMermaidHelper.initialize] before using this widget.
 ///
-/// [format] chooses a **single** render path. It does not run PNG and SVG as
-/// one pipeline. Default is [MermaidRenderFormat.svg].
+/// [format] decides the rendering format, SVG/PNG. Default is [MermaidRenderFormat.svg].
 ///
 /// Example:
 /// ```dart
@@ -29,16 +28,16 @@ class MermaidDiagram extends StatefulWidget {
   /// The Mermaid diagram source code.
   final String diagram;
 
-  /// Native method used to produce the picture. Independent of the other format.
+  /// Rendering format: SVG **or** PNG.
   final MermaidRenderFormat format;
 
-  /// How the picture should be inscribed into the available space.
+  /// How the rendered diagram fits its parent.
   final BoxFit fit;
 
-  /// Padding around the diagram.
+  /// Diagram padding.
   final EdgeInsets padding;
 
-  /// Optional builder for the loading state. Defaults to a centered progress indicator.
+  /// Loading indicator builder.
   final WidgetBuilder? loadingBuilder;
 
   const MermaidDiagram({
