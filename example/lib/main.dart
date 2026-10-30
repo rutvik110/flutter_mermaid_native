@@ -15,7 +15,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Mermaid Diagrams',
       theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue), useMaterial3: true),
-      showPerformanceOverlay: true,
       home: const DiagramViewer(),
     );
   }
@@ -47,10 +46,7 @@ class _DiagramViewerState extends State<DiagramViewer> {
         ),
         body: TabBarView(
           children: [
-            _PreviewTab(
-              selectedIndex: _selectedIndex,
-              onSelected: (index) => setState(() => _selectedIndex = index),
-            ),
+            _PreviewTab(selectedIndex: _selectedIndex, onSelected: (index) => setState(() => _selectedIndex = index)),
             const _AllDiagramsTab(),
           ],
         ),
@@ -170,11 +166,7 @@ class _AllDiagramsTab extends StatelessWidget {
                 ),
                 Expanded(
                   child: SizedBox.expand(
-                    child: MermaidDiagram(
-                      diagram: example.code,
-                      padding: const EdgeInsets.all(8),
-                      fit: BoxFit.contain,
-                    ),
+                    child: MermaidDiagram(diagram: example.code, padding: const EdgeInsets.all(8), fit: BoxFit.contain),
                   ),
                 ),
               ],
