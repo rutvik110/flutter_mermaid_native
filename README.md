@@ -2,9 +2,7 @@
 
 Render [Mermaid](https://mermaid.js.org/) diagrams in Flutter using a native [Rust](https://www.rust-lang.org/) engine ([merman](https://crates.io/crates/merman)) bridged with [flutter_rust_bridge](https://cjycode.com/flutter_rust_bridge/).
 
-This package does **not** use a WebView or JavaScript. Diagrams are rendered to SVG/PNG on the native side and displayed with Flutter widgets.
-
-> The Dart package is named `flutter_mermaid_native` because [`flutter_mermaid`](https://pub.dev/packages/flutter_mermaid) is already taken on pub.dev.
+Mermaid diagrams SVG/PNG are created using the native rust layer and then displayed with Flutter widgets.
 
 ## Supported diagram types
 
@@ -24,9 +22,8 @@ ZenUML is not fully supported by the current Rust parser.
 
 ## Requirements
 
-- Flutter 3.38 or newer (Dart 3.10+)
-- A [Rust toolchain](https://rustup.rs/) on machines that **build** the app (the crate is compiled by [Cargokit](https://github.com/irondash/cargokit) during `flutter build` / `flutter run`)
-- Android, iOS, macOS, Linux, or Windows. Web is not supported.
+- Flutter 3.38 or newer (Dart 3.10+).
+- A [Rust toolchain](https://rustup.rs/) on machines that **build** the app (the crate is compiled by [Cargokit](https://github.com/irondash/cargokit) during `flutter build` / `flutter run`).
 
 ## Installation
 
