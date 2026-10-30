@@ -67,8 +67,14 @@ class MermaidDiagram extends StatefulWidget {
 class _MermaidDiagramState extends State<MermaidDiagram> {
   Uint8List? _png;
   String? _svg;
+
+  // Diagram processing loading flag.
   bool _isLoading = true;
+
+  // Error capturing during diagram processing flow.
   Object? _error;
+
+  // Error stack trace.
   StackTrace? _stackTrace;
 
   bool get _hasProcessedDiagram => switch (widget.format) {
