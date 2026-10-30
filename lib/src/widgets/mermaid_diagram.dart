@@ -10,16 +10,13 @@ import '../enums/mermaid_render_format.dart';
 export '../enums/mermaid_render_format.dart';
 
 /// Builds an error widget when diagram rendering fails.
-typedef MermaidErrorWidgetBuilder =
-    Widget Function(BuildContext context, Object error, StackTrace? stackTrace);
+typedef MermaidErrorWidgetBuilder = Widget Function(BuildContext context, Object error, StackTrace? stackTrace);
 
 /// Builds a widget from native PNG bytes produced by the Mermaid renderer.
-typedef MermaidImageDiagramBuilder =
-    Widget Function(BuildContext context, Uint8List png, BoxFit fit);
+typedef MermaidImageDiagramBuilder = Widget Function(BuildContext context, Uint8List png, BoxFit fit);
 
 /// Builds a widget from native SVG markup produced by the Mermaid renderer.
-typedef MermaidSvgDiagramBuilder =
-    Widget Function(BuildContext context, String svg, BoxFit fit);
+typedef MermaidSvgDiagramBuilder = Widget Function(BuildContext context, String svg, BoxFit fit);
 
 /// A widget that renders Mermaid diagram code as PNG or SVG.
 ///
@@ -69,6 +66,11 @@ class MermaidDiagram extends StatefulWidget {
   /// Custom SVG diagram widget. Used to render the generated diagram SVG string.
   final MermaidSvgDiagramBuilder? svgDiagramBuilder;
 
+  /// When false, skips [MermaidCache] caching for processed mermaid diagrams image-bytes/svg.
+  ///
+  /// Default is true.
+  final bool enableCache;
+
   const MermaidDiagram({
     super.key,
     required this.diagram,
@@ -80,6 +82,7 @@ class MermaidDiagram extends StatefulWidget {
     this.diagramWidgetRenderingErrorBuilder,
     this.imageDiagramBuilder,
     this.svgDiagramBuilder,
+    this.enableCache = true,
   });
 
   @override
@@ -116,7 +119,8 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
   void didUpdateWidget(MermaidDiagram oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.diagram != widget.diagram ||
-        oldWidget.format != widget.format) {
+        oldWidget.format != widget.format ||
+        oldWidget.enableCache != widget.enableCache) {
       if (!_applyCache()) {
         _render();
       }
@@ -124,6 +128,7 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
   }
 
   bool _applyCache() {
+    if (!widget.enableCache) return false;
     final cache = MermaidCache.instance;
     switch (widget.format) {
       case MermaidRenderFormat.png:
@@ -159,7 +164,9 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
             diagram: widget.diagram,
           );
           if (!mounted) return;
-          MermaidCache.instance.putPng(widget.diagram, pixels);
+          if (widget.enableCache) {
+            MermaidCache.instance.putPng(widget.diagram, pixels);
+          }
           setState(() {
             _png = pixels;
             _isLoading = false;
@@ -169,7 +176,9 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
             diagram: widget.diagram,
           );
           if (!mounted) return;
-          MermaidCache.instance.putSvg(widget.diagram, svg);
+          if (widget.enableCache) {
+            MermaidCache.instance.putSvg(widget.diagram, svg);
+          }
           setState(() {
             _svg = svg;
             _isLoading = false;
@@ -238,9 +247,7 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     final Widget child;
 
     if (_isLoading) {
-      child =
-          widget.loadingBuilder?.call(context) ??
-          const Center(child: CircularProgressIndicator());
+      child = widget.loadingBuilder?.call(context) ?? const Center(child: CircularProgressIndicator());
     } else if (_error != null || !_hasProcessedDiagram) {
       child =
           widget.diagramSourceProcessingErrorBuilder?.call(

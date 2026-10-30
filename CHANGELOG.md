@@ -8,6 +8,7 @@
 * `MermaidDiagram.format` selects an independent PNG or SVG render path (default PNG).
 * `MermaidDiagram` accepts optional `imageDiagramBuilder` and `svgDiagramBuilder` callbacks to replace `Image.memory` / `SvgPicture.string`.
 * PNG text is drawn with Helvetica (Apple) or Roboto (Android), not Mermaid's Trebuchet/Arial stack.
+* `MermaidDiagram.enableCache` disables the in-memory PNG/SVG cache for that widget.
 
 ## 0.0.2
 

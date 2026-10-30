@@ -131,6 +131,7 @@ flowchart TD
 | `diagramWidgetRenderingErrorBuilder` | `MermaidErrorWidgetBuilder?` | Package error widget | `Image` / `SvgPicture` widget load error |
 | `imageDiagramBuilder` | `MermaidImageDiagramBuilder?` | `Image.memory` | Used to render generated diagram image bytes |
 | `svgDiagramBuilder` | `MermaidSvgDiagramBuilder?` | `SvgPicture.string` | Used to render generated diagram svg string |
+| `enableCache` | `bool` | `true` | When false, skips caching generated mermaid diagrams image-bytes/SVG |
 
 PNG and SVG are cached separately by diagram source. Call `FlutterMermaidHelper.clearMermaidCache()` when you want to free that memory.
 

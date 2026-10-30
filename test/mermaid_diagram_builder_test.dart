@@ -70,4 +70,27 @@ void main() {
     expect(find.text('png-builder'), findsNothing);
     expect(find.byType(SvgPicture), findsOneWidget);
   });
+
+  testWidgets('skips cache when enableCache is false', (tester) async {
+    MermaidCache.instance.putPng(diagram, pngBytes);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MermaidDiagram(
+          diagram: diagram,
+          enableCache: false,
+          loadingBuilder: (_) => const Text('loading'),
+          diagramSourceProcessingErrorBuilder: (_, _, _) => const Text('error'),
+        ),
+      ),
+    );
+
+    expect(find.byType(Image), findsNothing);
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget is Text && (widget.data == 'loading' || widget.data == 'error'),
+      ),
+      findsOneWidget,
+    );
+  });
 }
