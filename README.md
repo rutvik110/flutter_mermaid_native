@@ -18,17 +18,55 @@ Mermaid diagrams PNG/SVG are created using the native rust layer based on the pr
 
 ## Supported diagram types
 
-- Flowcharts
-- Sequence diagrams
-- Class diagrams
-- State diagrams
-- Entity relationship diagrams
-- Pie charts
-- Gantt charts
-- Mindmaps
-- Git graphs
-- Timelines
-- User journey diagrams
+PNG samples from the example gallery, rendered by the native engine.
+
+### Flowchart
+
+<img src="doc/diagrams/flowchart.png" alt="Flowchart" width="280" />
+
+### Flowchart with subgraphs
+
+<img src="doc/diagrams/flowchart_with_subgraphs.png" alt="Flowchart with subgraphs" width="420" />
+
+### Sequence
+
+<img src="doc/diagrams/sequence.png" alt="Sequence diagram" width="560" />
+
+### Class
+
+<img src="doc/diagrams/class.png" alt="Class diagram" width="360" />
+
+### State
+
+<img src="doc/diagrams/state.png" alt="State diagram" width="280" />
+
+### Entity relationship
+
+<img src="doc/diagrams/entity_relationship.png" alt="Entity relationship diagram" width="240" />
+
+### Pie chart
+
+<img src="doc/diagrams/pie_chart.png" alt="Pie chart" width="400" />
+
+### Gantt
+
+<img src="doc/diagrams/gantt.png" alt="Gantt chart" width="720" />
+
+### Mindmap
+
+<img src="doc/diagrams/mindmap.png" alt="Mindmap" width="480" />
+
+### Git graph
+
+<img src="doc/diagrams/git_graph.png" alt="Git graph" width="360" />
+
+### Timeline
+
+<img src="doc/diagrams/timeline.png" alt="Timeline" width="720" />
+
+### User journey
+
+<img src="doc/diagrams/user_journey.png" alt="User journey" width="720" />
 
 ZenUML is not fully supported by the current Rust parser.
 
@@ -229,6 +267,12 @@ flutter_rust_bridge_codegen generate
 ```
 
 Keep the `flutter_rust_bridge` Dart dependency and the codegen CLI on the same version.
+
+Regenerate README diagram PNGs from `example/lib/mermaid_diagram_examples.dart`:
+
+```bash
+cargo run --release --bin export_readme_diagrams --manifest-path rust/Cargo.toml
+```
 
 ## Platform support
 
