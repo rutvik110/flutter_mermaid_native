@@ -3,10 +3,10 @@ description: >-
   Render Mermaid diagrams in Flutter with a native Rust engine (merman).
   No WebView. Supports flowcharts, sequence, class, state, ER, Gantt, pie, git, and more.
 version: 0.1.0
-homepage: https://github.com/pieces-app/flutter_mermaid
-repository: https://github.com/pieces-app/flutter_mermaid
-issue_tracker: https://github.com/pieces-app/flutter_mermaid/issues
-documentation: https://github.com/pieces-app/flutter_mermaid#readme
+homepage: https://github.com/rutvik110/flutter_mermaid_native
+repository: https://github.com/rutvik110/flutter_mermaid_native
+issue_tracker: https://github.com/rutvik110/flutter_mermaid_native/issues
+documentation: https://github.com/rutvik110/flutter_mermaid_native#readme
 
 topics:
   - mermaid
@@ -17,7 +17,7 @@ topics:
 
 environment:
   sdk: ^3.10.0
-  flutter: '>=3.38.0'
+  flutter: ">=3.38.0"
 
 dependencies:
   flutter:

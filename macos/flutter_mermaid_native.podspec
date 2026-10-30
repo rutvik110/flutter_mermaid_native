@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 Render Mermaid diagrams in Flutter using a native Rust engine. No WebView.
                        DESC
-  s.homepage         = 'https://github.com/pieces-app/flutter_mermaid'
+  s.homepage         = 'https://github.com/rutvik110/flutter_mermaid_native'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Pieces for Developers' => 'https://github.com/pieces-app' }
 
