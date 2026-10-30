@@ -9,6 +9,9 @@ import '../enums/mermaid_render_format.dart';
 
 export '../enums/mermaid_render_format.dart';
 
+/// Builds an error widget when diagram rendering fails.
+typedef MermaidErrorWidgetBuilder = Widget Function(BuildContext context, Object error, StackTrace? stackTrace);
+
 /// A widget that renders Mermaid diagram code as PNG or SVG.
 ///
 /// Call [FlutterMermaidHelper.initialize] before using this widget.
@@ -40,6 +43,12 @@ class MermaidDiagram extends StatefulWidget {
   /// Loading indicator builder.
   final WidgetBuilder? loadingBuilder;
 
+  /// Shown when native SVG/PNG generation fails.
+  final MermaidErrorWidgetBuilder? diagramSourceProcessingErrorBuilder;
+
+  /// Shown when [Image.memory] or [SvgPicture] fails to load the generated diagram.
+  final MermaidErrorWidgetBuilder? diagramWidgetRenderingErrorBuilder;
+
   const MermaidDiagram({
     super.key,
     required this.diagram,
@@ -47,6 +56,8 @@ class MermaidDiagram extends StatefulWidget {
     this.fit = BoxFit.contain,
     this.padding = const EdgeInsets.all(16.0),
     this.loadingBuilder,
+    this.diagramSourceProcessingErrorBuilder,
+    this.diagramWidgetRenderingErrorBuilder,
   });
 
   @override
@@ -57,7 +68,8 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
   Uint8List? _png;
   String? _svg;
   bool _isLoading = true;
-  String? _error;
+  Object? _error;
+  StackTrace? _stackTrace;
 
   @override
   void initState() {
@@ -95,6 +107,7 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     }
     _isLoading = false;
     _error = null;
+    _stackTrace = null;
     return true;
   }
 
@@ -102,6 +115,7 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     setState(() {
       _isLoading = true;
       _error = null;
+      _stackTrace = null;
       _png = null;
       _svg = null;
     });
@@ -125,20 +139,52 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
             _isLoading = false;
           });
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = e.toString();
-          _isLoading = false;
-        });
-      }
+    } catch (e, stackTrace) {
+      setState(() {
+        _error = e;
+        _stackTrace = stackTrace;
+        _isLoading = false;
+      });
     }
   }
 
+  Widget _defaultSourceProcessingError(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12.0),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: SelectableText(
+            widget.diagram.trim(),
+            style: TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w300, height: 1.6),
+          ),
+        ),
+        if (_error != null)
+          Positioned(
+            right: 8,
+            bottom: 8,
+            child: Tooltip(
+              message: _error.toString(),
+              child: Icon(Icons.error_outline, size: 16, color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _widgetRenderingError(BuildContext context, Object error, StackTrace? stackTrace) {
+    return widget.diagramWidgetRenderingErrorBuilder?.call(context, error, stackTrace) ??
+        Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error);
+  }
+
   bool get _hasPicture => switch (widget.format) {
-        MermaidRenderFormat.png => _png != null,
-        MermaidRenderFormat.svg => _svg != null,
-      };
+    MermaidRenderFormat.png => _png != null,
+    MermaidRenderFormat.svg => _svg != null,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -147,41 +193,19 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     if (_isLoading) {
       child = widget.loadingBuilder?.call(context) ?? const Center(child: CircularProgressIndicator());
     } else if (_error != null || !_hasPicture) {
-      child = Stack(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12.0),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: SelectableText(
-              widget.diagram.trim(),
-              style: TextStyle(
-                fontFamily: 'monospace',
-                fontWeight: FontWeight.w300,
-                height: 1.6,
-              ),
-            ),
-          ),
-          if (_error != null)
-            Positioned(
-              right: 8,
-              bottom: 8,
-              child: Tooltip(
-                message: _error!,
-                child: Icon(Icons.error_outline, size: 16, color: Theme.of(context).colorScheme.error),
-              ),
-            ),
-        ],
-      );
+      child =
+          widget.diagramSourceProcessingErrorBuilder?.call(
+            context,
+            _error ?? StateError('Diagram produced no picture'),
+            _stackTrace,
+          ) ??
+          _defaultSourceProcessingError(context);
     } else {
       child = Padding(
         padding: widget.padding,
         child: switch (widget.format) {
-          MermaidRenderFormat.png => Image.memory(_png!, fit: widget.fit),
-          MermaidRenderFormat.svg => SvgPicture.string(_svg!, fit: widget.fit),
+          MermaidRenderFormat.png => Image.memory(_png!, fit: widget.fit, errorBuilder: _widgetRenderingError),
+          MermaidRenderFormat.svg => SvgPicture.string(_svg!, fit: widget.fit, errorBuilder: _widgetRenderingError),
         },
       );
     }

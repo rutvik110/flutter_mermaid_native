@@ -76,6 +76,8 @@ flowchart TD
 | `fit` | `BoxFit` | `BoxFit.contain` | How the rendered diagram fits its parent |
 | `padding` | `EdgeInsets` | `EdgeInsets.all(16)` | Padding around the picture |
 | `loadingBuilder` | `WidgetBuilder?` | progress indicator | Shown while rendering |
+| `diagramSourceProcessingErrorBuilder` | `MermaidErrorWidgetBuilder?` | Package error widget | Native SVG/PNG generation error |
+| `diagramWidgetRenderingErrorBuilder` | `MermaidErrorWidgetBuilder?` | Package error widget | `Image` / `SvgPicture` widget load error |
 
 PNG and SVG are cached separately by diagram source. Call `FlutterMermaidHelper.clearMermaidCache()` when you want to free that memory.
 
@@ -102,6 +104,7 @@ Different mermaid rendering methods benchmarks.
 | SVG | Headless `renderMermaidToSvg` only |
 | PNG | Headless `renderMermaidToPng` only |
 | Widget PNG path | One isolated `MermaidDiagram(format: png)` until `Image.memory` is in the tree (first and second paint) |
+| Widget SVG path | One isolated `MermaidDiagram(format: svg)` until `SvgPicture` is in the tree (first and second paint) |
 
 **Testing Environment**
 
@@ -112,7 +115,7 @@ Different mermaid rendering methods benchmarks.
 | Flutter | 3.47.8 stable (Dart 3.13.7) |
 | Build Mode | Profile (AOT), `flutter drive --profile -d macos --driver=test_driver/integration_test.dart --target=integration_test/render_benchmark_test.dart` |
 
-SVG and PNG times are the **average** of 5 timed runs after 1 warmup, one diagram at a time. Widget PNG **first paint** is a cold mount of **that diagram only** (empty cache, empty tree beforehand). **Second paint** remounts the same single diagram with cache already filled.
+SVG and PNG times are the **average** of 5 timed runs after 1 warmup, one diagram at a time. Widget **first paint** is a cold mount of **that diagram only** (empty cache, empty tree beforehand). **Second paint** remounts the same single diagram with cache already filled.
 
 Benchmarks captured in Flutter Profile mode.
 
@@ -122,56 +125,75 @@ Headless `FlutterMermaidHelper.renderMermaidToSvg`. Typical average **0.2–1.1 
 
 | Diagram | Average | Bytes |
 |---|---:|---:|
-| Flowchart | 0.5 ms | 14,937 |
-| Flowchart with subgraphs | 1.0 ms | 23,615 |
+| Flowchart | 0.6 ms | 14,937 |
+| Flowchart with subgraphs | 1.1 ms | 23,615 |
 | Sequence | 0.2 ms | 23,091 |
-| Class | 0.8 ms | 21,714 |
-| State | 1.1 ms | 172,371 |
-| Entity relationship | 1.1 ms | 35,898 |
+| Class | 0.7 ms | 21,714 |
+| State | 1.2 ms | 172,384 |
+| Entity relationship | 1.2 ms | 35,898 |
 | Pie chart | 0.2 ms | 4,248 |
 | Gantt | 0.3 ms | 9,507 |
 | Mindmap | 0.7 ms | 40,804 |
 | Git graph | 0.3 ms | 5,391 |
 | Timeline | 0.3 ms | 19,939 |
-| User journey | 0.2 ms | 20,841 |
+| User journey | 0.3 ms | 20,841 |
 
 ### PNG
 
-Headless `FlutterMermaidHelper.renderMermaidToPng` at 2x. This path does **not** call the SVG helper above; it is a separate API. Typical average **19–40 ms**. Slowest in this set: timeline, user journey, Gantt.
+Headless `FlutterMermaidHelper.renderMermaidToPng` at 2x. Typical average **17–39 ms**.
 
 | Diagram | Average | Bytes |
 |---|---:|---:|
-| Flowchart | 22 ms | 81,783 |
-| Flowchart with subgraphs | 27 ms | 219,769 |
-| Sequence | 26 ms | 158,081 |
-| Class | 25 ms | 160,516 |
-| State | 23 ms | 97,456 |
-| Entity relationship | 25 ms | 174,040 |
-| Pie chart | 28 ms | 185,520 |
-| Gantt | 30 ms | 151,603 |
-| Mindmap | 23 ms | 118,184 |
-| Git graph | 19 ms | 52,395 |
-| Timeline | 40 ms | 246,967 |
-| User journey | 33 ms | 334,978 |
+| Flowchart | 21 ms | 81,783 |
+| Flowchart with subgraphs | 26 ms | 219,769 |
+| Sequence | 23 ms | 158,081 |
+| Class | 23 ms | 160,516 |
+| State | 23 ms | 97,457 |
+| Entity relationship | 24 ms | 174,040 |
+| Pie chart | 27 ms | 185,520 |
+| Gantt | 29 ms | 151,603 |
+| Mindmap | 22 ms | 118,184 |
+| Git graph | 17 ms | 52,395 |
+| Timeline | 39 ms | 246,967 |
+| User journey | 32 ms | 334,978 |
 
 ### Widget PNG path (independent)
 
-Each row mounts **one** `MermaidDiagram(format: MermaidRenderFormat.png)` and waits until `Image.memory` is in the tree.**First paint** is a cold mount (empty cache, native PNG encode). **Second paint** remounts that same diagram with cache already filled.
+Each row mounts **one** `MermaidDiagram(format: MermaidRenderFormat.png)` and waits until `Image.memory` is in the tree. **First paint** is a cold mount (empty cache, native PNG encode). **Second paint** remounts that same diagram with cache already filled.
 
 | Diagram | First paint | Second paint |
 |---|---:|---:|
 | Flowchart | 25 ms | <1 ms |
 | Flowchart with subgraphs | 50 ms | <1 ms |
-| Sequence | 45 ms | <1 ms |
-| Class | 35 ms | <1 ms |
+| Sequence | 50 ms | <1 ms |
+| Class | 50 ms | <1 ms |
 | State | 35 ms | <1 ms |
-| Entity relationship | 50 ms | <1 ms |
+| Entity relationship | 25 ms | <1 ms |
 | Pie chart | 50 ms | <1 ms |
 | Gantt | 50 ms | <1 ms |
-| Mindmap | 45 ms | <1 ms |
+| Mindmap | 50 ms | <1 ms |
 | Git graph | 25 ms | <1 ms |
-| Timeline | 55 ms | <1 ms |
+| Timeline | 50 ms | <1 ms |
 | User journey | 50 ms | <1 ms |
+
+### Widget SVG path (independent)
+
+Each row mounts **one** `MermaidDiagram(format: MermaidRenderFormat.svg)` and waits until `SvgPicture` is in the tree. **First paint** is a cold mount (empty cache, native SVG). **Second paint** remounts that same diagram with cache already filled.
+
+| Diagram | First paint | Second paint |
+|---|---:|---:|
+| Flowchart | 25 ms | <1 ms |
+| Flowchart with subgraphs | 25 ms | <1 ms |
+| Sequence | 25 ms | <1 ms |
+| Class | 25 ms | <1 ms |
+| State | 26 ms | <1 ms |
+| Entity relationship | 27 ms | 25 ms |
+| Pie chart | 25 ms | <1 ms |
+| Gantt | 25 ms | <1 ms |
+| Mindmap | 26 ms | 26 ms |
+| Git graph | 25 ms | <1 ms |
+| Timeline | 25 ms | <1 ms |
+| User journey | 25 ms | <1 ms |
 
 Re-run:
 

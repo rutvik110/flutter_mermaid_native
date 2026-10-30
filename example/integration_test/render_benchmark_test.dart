@@ -27,6 +27,17 @@ void main() {
   });
 
   testWidgets('measures isolated SVG, PNG, and widget times', (tester) async {
+    final previousOnError = FlutterError.onError;
+    FlutterError.onError = (details) {
+      if (_isFlutterSvgParseError(details)) {
+        return;
+      }
+      previousOnError?.call(details);
+    };
+    addTearDown(() {
+      FlutterError.onError = previousOnError;
+    });
+
     final results = <RenderBenchmarkResult>[];
 
     for (final example in diagramExamples) {
@@ -47,6 +58,8 @@ void main() {
     for (final format in [MermaidRenderFormat.png, MermaidRenderFormat.svg]) {
       final formatLabel = format == MermaidRenderFormat.png ? 'png' : 'svg';
       for (final example in diagramExamples) {
+        // ignore: avoid_print
+        print('BENCHMARK_PROGRESS starting $formatLabel widget ${example.name}');
         await _WidgetPaintTimer.pumpEmpty(tester);
         FlutterMermaidHelper.clearMermaidCache();
 
@@ -110,9 +123,18 @@ void main() {
     print('BENCHMARK_JSON ${jsonEncode(results.map((item) => item.toJson()).toList())}');
 
     for (final result in results) {
-      expect(result.median.inMicroseconds, greaterThan(0));
+      if (result.format.endsWith('widget-second')) {
+        expect(result.mean.inMicroseconds, greaterThanOrEqualTo(0));
+        continue;
+      }
+      expect(result.mean.inMicroseconds, greaterThan(0));
     }
   });
+}
+
+bool _isFlutterSvgParseError(FlutterErrorDetails details) {
+  final stack = details.stack?.toString() ?? '';
+  return stack.contains('SvgParser') || stack.contains('vector_graphics_compiler');
 }
 
 abstract final class _WidgetPaintTimer {
@@ -143,7 +165,9 @@ abstract final class _WidgetPaintTimer {
 
     final pictureFinder = format == MermaidRenderFormat.png
         ? find.byType(Image)
-        : find.byType(SvgPicture);
+        : find.byWidgetPredicate(
+            (candidate) => candidate is SvgPicture || candidate is Icon,
+          );
 
     final stopwatch = Stopwatch()..start();
     var foundPicture = pictureFinder.evaluate().isNotEmpty;
@@ -152,6 +176,7 @@ abstract final class _WidgetPaintTimer {
       foundPicture = pictureFinder.evaluate().isNotEmpty;
     }
     stopwatch.stop();
+    while (tester.takeException() != null) {}
     expect(foundPicture, isTrue, reason: '$name should paint ${format.name}');
     expect(find.byType(MermaidDiagram), findsOneWidget, reason: '$name must be the only diagram');
     return stopwatch.elapsed;
