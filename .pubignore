@@ -1,0 +1,48 @@
+# Replaces .gitignore for `dart pub publish`. Keep this in sync with files
+# that must not ship on pub.dev.
+
+# IDE / OS
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.idea/
+.svn/
+.swiftpm/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.class
+*.log
+*.pyc
+*.swp
+migrate_working_dir/
+
+# Flutter / Dart tooling
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+.pub-cache/
+.pub/
+/build/
+/coverage/
+**/doc/api/
+/pubspec.lock
+
+# Native and example build output
+rust/target/
+**/Pods/
+**/.cxx/
+example/**/build/
+example/android/build/
+example/android/.gradle/
+example/ios/Flutter/.last_build_id
+example/**/*.xcworkspace/xcuserdata/
+cargokit/build_tool/.dart_tool/
+
+# CI and local launch config (not needed by package consumers)
+.github/
+screenshots/

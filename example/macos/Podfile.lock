@@ -1,22 +1,22 @@
 PODS:
-  - flutter_mermaid (0.0.1):
+  - flutter_mermaid_native (0.1.0):
     - FlutterMacOS
   - FlutterMacOS (1.0.0)
 
 DEPENDENCIES:
-  - flutter_mermaid (from `Flutter/ephemeral/.symlinks/plugins/flutter_mermaid/macos`)
+  - flutter_mermaid_native (from `Flutter/ephemeral/.symlinks/plugins/flutter_mermaid_native/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
 
 EXTERNAL SOURCES:
-  flutter_mermaid:
-    :path: Flutter/ephemeral/.symlinks/plugins/flutter_mermaid/macos
+  flutter_mermaid_native:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_mermaid_native/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
 
 SPEC CHECKSUMS:
-  flutter_mermaid: 18fe6f90f69a52a31b0a5d8852e8436e3c415eab
-  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
+  flutter_mermaid_native: bc54949e60e9e89f16151e22479531d995711605
+  FlutterMacOS: c232990155153907050900a2e175c7773903ba4e
 
-PODFILE CHECKSUM: 54d867c82ac51cbd61b565781b9fada492027009
+PODFILE CHECKSUM: 1e95c36afbfd1cb6423ceca4de7a8e1b256fb6ac
 
-COCOAPODS: 1.14.3
+COCOAPODS: 1.16.2

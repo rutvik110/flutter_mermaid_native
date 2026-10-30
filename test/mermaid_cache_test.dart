@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:flutter_mermaid/flutter_mermaid.dart';
+import 'package:flutter_mermaid_native/flutter_mermaid_native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -67,6 +67,16 @@ void main() {
 
     test('clear on empty cache does not throw', () {
       expect(() => MermaidCache.instance.clear(), returnsNormally);
+    });
+
+    test('size tracks entries and remove deletes one key', () {
+      expect(MermaidCache.instance.size, 0);
+      MermaidCache.instance.put(diagram, imageData);
+      expect(MermaidCache.instance.size, 1);
+
+      MermaidCache.instance.remove(diagram);
+      expect(MermaidCache.instance.size, 0);
+      expect(MermaidCache.instance.contains(diagram), isFalse);
     });
   });
 }

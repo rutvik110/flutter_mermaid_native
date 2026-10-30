@@ -1,16 +1,19 @@
-# flutter_mermaid_example
+# flutter_mermaid_native example
 
-Demonstrates how to use the flutter_mermaid plugin.
+Run this app to try the native Mermaid renderer:
 
-## Getting Started
+```bash
+cd example
+flutter run -d macos
+```
 
-This project is a starting point for a Flutter application.
+The gallery covers flowcharts, sequence, class, state, ER, pie, Gantt, mindmap, git, timeline, and journey diagrams.
 
-A few resources to get you started if this is your first Flutter project:
+`FlutterMermaidHelper.initialize()` must run before `runApp`.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Rendering benchmarks (SVG, PNG, and widget first paint):
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+cd example
+flutter test integration_test/render_benchmark_test.dart -d macos
+```

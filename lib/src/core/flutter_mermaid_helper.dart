@@ -1,50 +1,47 @@
 import 'dart:typed_data';
 
-import 'package:flutter_mermaid/flutter_mermaid.dart';
-import 'package:flutter_mermaid/src/rust/frb_generated.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_mermaid_native/src/core/mermaid_cache.dart';
+import 'package:flutter_mermaid_native/src/rust/frb_generated.dart';
 
-class FlutterMermaidHelper {
-  final FlutterMermaidHelper _instance = FlutterMermaidHelper._();
-
-  FlutterMermaidHelper._();
-
-  FlutterMermaidHelper get instance => _instance;
-
+/// Static entry point for initializing the native renderer and rendering
+/// Mermaid source to SVG or PNG without a widget.
+abstract final class FlutterMermaidHelper {
   static bool _mermaidInitialized = false;
 
-  /// Initialize the flutter_mermaid library for native Mermaid diagram rendering.
+  /// Initialize the native Mermaid renderer.
   ///
-  /// This must be called before using [MermaidDiagram] widgets. It is safe to call
-  /// multiple times - subsequent calls are no-ops.
+  /// Call this once before using [MermaidDiagram] or the render methods.
+  /// Subsequent calls are no-ops.
   ///
-  /// Example:
   /// ```dart
-  /// void main() async {
-  ///   WidgetsFlutterBinding.ensureInitialized();
-  ///   await initMermaid();
-  ///   runApp(MyApp());
+  /// Future<void> main() async {
+  ///   await FlutterMermaidHelper.initialize();
+  ///   runApp(const MyApp());
   /// }
   /// ```
   static Future<void> initialize() async {
     if (_mermaidInitialized) return;
+    WidgetsFlutterBinding.ensureInitialized();
     await RustLib.init();
     _mermaidInitialized = true;
   }
 
+  /// Removes every diagram currently stored in [MermaidCache].
   static void clearMermaidCache() {
     MermaidCache.instance.clear();
   }
 
-  /// Generates and returns a SVG string from a Mermaid diagram code.
+  /// Renders [diagram] to an SVG document string.
   ///
-  /// [initialize] must be called somewhere in your app before calling this method.
+  /// [initialize] must have completed successfully before calling this.
   static Future<String> renderMermaidToSvg({required String diagram}) =>
       // ignore: invalid_use_of_internal_member
       RustLib.instance.api.crateApiSimpleRenderMermaidToSvg(diagram: diagram);
 
-  /// Generates and returns an image bytes from a Mermaid diagram code.
+  /// Renders [diagram] to PNG bytes at 2x scale.
   ///
-  /// [initialize] must be called somewhere in your app before calling this method.
+  /// [initialize] must have completed successfully before calling this.
   static Future<Uint8List> renderMermaidToPng({required String diagram}) =>
       // ignore: invalid_use_of_internal_member
       RustLib.instance.api.crateApiSimpleRenderMermaidToPng(diagram: diagram);

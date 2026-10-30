@@ -2,12 +2,12 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../core/flutter_mermaid_helper.dart';
 import '../core/mermaid_cache.dart';
-import '../rust/api/simple.dart';
 
 /// A widget that renders Mermaid diagram code as a PNG image.
 ///
-/// Call [RustLib.init] in your app's main before using this widget.
+/// Call [FlutterMermaidHelper.initialize] before using this widget.
 ///
 /// This widget automatically caches rendered diagrams using [MermaidCache],
 /// so diagrams are only rendered once and subsequent displays load instantly
@@ -32,7 +32,7 @@ class MermaidDiagram extends StatefulWidget {
   /// Padding around the diagram.
   final EdgeInsets padding;
 
-  /// Optional builder for the loading state. When null, shows nothing while rendering.
+  /// Optional builder for the loading state. Defaults to a centered progress indicator.
   final WidgetBuilder? loadingBuilder;
 
   const MermaidDiagram({
@@ -70,6 +70,8 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
       final cached = getDiagramFromCache();
       if (cached == null) {
         _render();
+      } else {
+        setState(() {});
       }
     }
   }
@@ -95,7 +97,7 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
     });
 
     try {
-      final pixels = await renderMermaidToPng(diagram: widget.diagram);
+      final pixels = await FlutterMermaidHelper.renderMermaidToPng(diagram: widget.diagram);
       if (mounted) {
         // Store in cache
         MermaidCache.instance.put(widget.diagram, pixels);
@@ -132,7 +134,11 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
             ),
             child: SelectableText(
               widget.diagram.trim(),
-              style: TextStyle(fontFamily: 'JetBrainsMono', fontWeight: FontWeight.w300, height: 1.6),
+              style: TextStyle(
+                fontFamily: 'monospace',
+                fontWeight: FontWeight.w300,
+                height: 1.6,
+              ),
             ),
           ),
           if (_error != null)

@@ -41,6 +41,14 @@ final class MermaidCache {
     }
   }
 
+  /// Number of diagrams currently stored in the cache.
+  int get size => _cache.length;
+
+  /// Removes a single diagram from the cache.
+  void remove(String diagram) {
+    _cache.remove(_normalizeKey(diagram));
+  }
+
   /// Clears all cached diagrams.
   ///
   /// Call this when switching conversations or when you want to free memory.

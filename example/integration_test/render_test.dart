@@ -1,5 +1,5 @@
-import 'package:flutter_mermaid/flutter_mermaid.dart';
-import 'package:flutter_mermaid/src/rust/api/simple.dart';
+import 'package:flutter_mermaid_native/flutter_mermaid_native.dart';
+import 'package:flutter_mermaid_native/src/rust/api/simple.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
