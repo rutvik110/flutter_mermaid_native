@@ -16,7 +16,7 @@ typedef MermaidErrorWidgetBuilder = Widget Function(BuildContext context, Object
 ///
 /// Call [FlutterMermaidHelper.initialize] before using this widget.
 ///
-/// [format] decides the rendering format, SVG/PNG. Default is [MermaidRenderFormat.svg].
+/// [format] decides the rendering format, SVG/PNG. Default is [MermaidRenderFormat.png].
 ///
 /// Example:
 /// ```dart
@@ -52,7 +52,7 @@ class MermaidDiagram extends StatefulWidget {
   const MermaidDiagram({
     super.key,
     required this.diagram,
-    this.format = MermaidRenderFormat.svg,
+    this.format = MermaidRenderFormat.png,
     this.fit = BoxFit.contain,
     this.padding = const EdgeInsets.all(16.0),
     this.loadingBuilder,

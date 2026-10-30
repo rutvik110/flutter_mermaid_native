@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
     return const MaterialApp(
       home: Scaffold(
         body: MermaidDiagram(
-          // format(optional): MermaidRenderFormat.png, // default format is SVG.
+          // format(optional): MermaidRenderFormat.svg, // default format is PNG.
           diagram: '''
 flowchart TD
     A[Start] --> B{Is it working?}
@@ -72,12 +72,14 @@ flowchart TD
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `diagram` | `String` | required | Mermaid source |
-| `format` | `MermaidRenderFormat` | `svg` | Rendering format: SVG **or** PNG|
+| `format` | `MermaidRenderFormat` | `png` | Rendering format: SVG **or** PNG|
 | `fit` | `BoxFit` | `BoxFit.contain` | How the rendered diagram fits its parent |
 | `padding` | `EdgeInsets` | `EdgeInsets.all(16)` | Padding around the picture |
 | `loadingBuilder` | `WidgetBuilder?` | progress indicator | Shown while rendering |
 | `diagramSourceProcessingErrorBuilder` | `MermaidErrorWidgetBuilder?` | Package error widget | Native SVG/PNG generation error |
 | `diagramWidgetRenderingErrorBuilder` | `MermaidErrorWidgetBuilder?` | Package error widget | `Image` / `SvgPicture` widget load error |
+
+> **Note on SVG:** `flutter_svg` does not support every SVG tag that the Rust renderer emits. For example, the Entity relationship diagram triggers a `RangeError` inside `flutter_svg`'s `SvgParser`. Diagrams rendered with `format: MermaidRenderFormat.svg` may therefore look inaccurate or fail to render. Use `MermaidRenderFormat.png` for those diagrams or your own svg builder.
 
 PNG and SVG are cached separately by diagram source. Call `FlutterMermaidHelper.clearMermaidCache()` when you want to free that memory.
 
