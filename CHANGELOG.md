@@ -1,3 +1,7 @@
+# Unreleased
+
+* `MermaidDiagram` accepts optional `imageDiagramBuilder` and `svgDiagramBuilder` callbacks to replace `Image.memory` / `SvgPicture.string`.
+
 # 0.1.0
 
 * First pub.dev-ready release of the native Mermaid renderer.

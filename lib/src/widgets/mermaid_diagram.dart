@@ -18,6 +18,9 @@ typedef MermaidErrorWidgetBuilder = Widget Function(BuildContext context, Object
 ///
 /// [format] decides the rendering format, SVG/PNG. Default is [MermaidRenderFormat.png].
 ///
+/// Override [imageDiagramBuilder] or [svgDiagramBuilder] to draw the generated picture with a
+/// custom widget instead of [Image.memory] / [SvgPicture.string].
+///
 /// Example:
 /// ```dart
 /// MermaidDiagram(
@@ -47,7 +50,15 @@ class MermaidDiagram extends StatefulWidget {
   final MermaidErrorWidgetBuilder? diagramSourceProcessingErrorBuilder;
 
   /// Shown when [Image.memory] or [SvgPicture] fails to load the generated diagram.
+  ///
+  /// Not used when a custom [imageDiagramBuilder] or [svgDiagramBuilder] is provided.
   final MermaidErrorWidgetBuilder? diagramWidgetRenderingErrorBuilder;
+
+  /// Custom image diagram widget. Used to render the generated diagram image bytes.
+  final Widget Function(BuildContext context, Uint8List png, BoxFit fit)? imageDiagramBuilder;
+
+  /// Custom SVG diagram widget. Used to render the generated diagram SVG string.
+  final Widget Function(BuildContext context, String svg, BoxFit fit)? svgDiagramBuilder;
 
   const MermaidDiagram({
     super.key,
@@ -58,6 +69,8 @@ class MermaidDiagram extends StatefulWidget {
     this.loadingBuilder,
     this.diagramSourceProcessingErrorBuilder,
     this.diagramWidgetRenderingErrorBuilder,
+    this.imageDiagramBuilder,
+    this.svgDiagramBuilder,
   });
 
   @override
@@ -210,8 +223,12 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
       child = Padding(
         padding: widget.padding,
         child: switch (widget.format) {
-          MermaidRenderFormat.png => Image.memory(_png!, fit: widget.fit, errorBuilder: _widgetRenderingError),
-          MermaidRenderFormat.svg => SvgPicture.string(_svg!, fit: widget.fit, errorBuilder: _widgetRenderingError),
+          MermaidRenderFormat.png =>
+            widget.imageDiagramBuilder?.call(context, _png!, widget.fit) ??
+                Image.memory(_png!, fit: widget.fit, errorBuilder: _widgetRenderingError),
+          MermaidRenderFormat.svg =>
+            widget.svgDiagramBuilder?.call(context, _svg!, widget.fit) ??
+                SvgPicture.string(_svg!, fit: widget.fit, errorBuilder: _widgetRenderingError),
         },
       );
     }

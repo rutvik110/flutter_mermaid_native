@@ -2,7 +2,9 @@
 
 Render [Mermaid](https://mermaid.js.org/) diagrams in Flutter using a native [Rust](https://www.rust-lang.org/) engine ([merman](https://crates.io/crates/merman)) bridged with [flutter_rust_bridge](https://cjycode.com/flutter_rust_bridge/).
 
-Mermaid diagrams SVG/PNG are created using the native rust layer and then displayed with Flutter widgets.
+Mermaid diagrams PNG/SVG are created using the native rust layer based on the provided diagram source and the output is then rendered on the flutter side.
+
+> **Note on generated SVG rendering with flutter_svg:** `flutter_mermaid_native` uses `flutter_svg` to render generated diagram SVG. But as of right now, `flutter_svg` does not support every SVG tag that the Rust layer emits to properly render mermaid diagrams. For example, the Entity relationship diagram triggers a `RangeError` inside `flutter_svg`'s `SvgParser`. Diagrams rendered with `format: MermaidRenderFormat.svg` may therefore look inaccurate or fail to render. Use `MermaidRenderFormat.png` for those diagrams, or pass `svgDiagramBuilder` to draw the SVG with another library.
 
 ## Supported diagram types
 
@@ -78,8 +80,8 @@ flowchart TD
 | `loadingBuilder` | `WidgetBuilder?` | progress indicator | Shown while rendering |
 | `diagramSourceProcessingErrorBuilder` | `MermaidErrorWidgetBuilder?` | Package error widget | Native SVG/PNG generation error |
 | `diagramWidgetRenderingErrorBuilder` | `MermaidErrorWidgetBuilder?` | Package error widget | `Image` / `SvgPicture` widget load error |
-
-> **Note on SVG:** `flutter_svg` does not support every SVG tag that the Rust renderer emits. For example, the Entity relationship diagram triggers a `RangeError` inside `flutter_svg`'s `SvgParser`. Diagrams rendered with `format: MermaidRenderFormat.svg` may therefore look inaccurate or fail to render. Use `MermaidRenderFormat.png` for those diagrams or your own svg builder.
+| `imageDiagramBuilder` | `Function?` | `Image.memory` | Used to render generated diagram image bytes |
+| `svgDiagramBuilder` | `Function?` | `SvgPicture.string` | Used to render generated diagram svg string |
 
 PNG and SVG are cached separately by diagram source. Call `FlutterMermaidHelper.clearMermaidCache()` when you want to free that memory.
 
