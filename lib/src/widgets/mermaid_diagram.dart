@@ -71,6 +71,11 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
   Object? _error;
   StackTrace? _stackTrace;
 
+  bool get _hasProcessedDiagram => switch (widget.format) {
+    MermaidRenderFormat.png => _png != null,
+    MermaidRenderFormat.svg => _svg != null,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -181,18 +186,13 @@ class _MermaidDiagramState extends State<MermaidDiagram> {
         Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error);
   }
 
-  bool get _hasPicture => switch (widget.format) {
-    MermaidRenderFormat.png => _png != null,
-    MermaidRenderFormat.svg => _svg != null,
-  };
-
   @override
   Widget build(BuildContext context) {
     final Widget child;
 
     if (_isLoading) {
       child = widget.loadingBuilder?.call(context) ?? const Center(child: CircularProgressIndicator());
-    } else if (_error != null || !_hasPicture) {
+    } else if (_error != null || !_hasProcessedDiagram) {
       child =
           widget.diagramSourceProcessingErrorBuilder?.call(
             context,
